@@ -96,14 +96,7 @@ La navegación principal incluye:
 ## Diseño de prototipos
 Se realizaron prototipos en **Figma**, contemplando al menos 7 pantallas (web y móvil).  
 
-👉 [Enlace al prototipo en Figma](#) *(agregar link real)*  
-
-Ejemplo de mockups:  
-![Vista Restaurante](src/assets/img/mockup-restaurante.png)  
-![Vista Productos](src/assets/img/mockup-productos.png)  
-
----
-
+👉 [https://www.figma.com/design/CuK58ZDfp13Tno1BijVZMr/Mockups-Web-Parcial-1?node-id=0-1&t=xrWhksod8hu37pp9-1](#) 
 ## Navegación y Experiencia de Usuario (1.4)
 
 ### Principios de UX
