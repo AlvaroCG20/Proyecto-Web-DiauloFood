@@ -87,7 +87,7 @@ La navegación principal incluye:
 - **Auth**: registro, login y recuperación de credenciales.  
 
 ### Diagrama de navegación
-![Arquitectura de navegación](src/assets/img/arquitectura-navegacion.png)
+![Arquitectura de navegación](image.png)
 
 *(Guarda la imagen que me enviaste en `src/assets/img/arquitectura-navegacion.png` para que se muestre en el README).*
 
