@@ -1,51 +1,29 @@
-<app-header title="Login"></app-header>
-<ion-content>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Iniciar sesión</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-<div class="d-flex-center">
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="go()">
+    <ion-item>
+      <ion-label position="stacked">Correo</ion-label>
+      <ion-input type="email" formControlName="email" placeholder="tu@correo.com"></ion-input>
+    </ion-item>
+    <div class="validators" *ngIf="form.controls['email'].touched && form.controls['email'].invalid">
+      <ion-text>Ingresa un correo válido</ion-text>
+    </div>
 
-    <form [formGroup]="form" class="auth-form" (ngSubmit)="submit()" (keypress.enter)="submit()">
+    <ion-item class="ion-margin-top">
+      <ion-label position="stacked">Contraseña</ion-label>
+      <ion-input type="password" formControlName="password" placeholder="••••••••"></ion-input>
+    </ion-item>
+    <div class="validators" *ngIf="form.controls['password'].touched && form.controls['password'].invalid">
+      <ion-text>La contraseña es requerida</ion-text>
+    </div>
 
-
-    <app-logo></app-logo>
-
-        <app-custom-input
-        
-        autocomplete="email"
-        icon="mail-outline"
-        [control]="form.controls.email"
-        type="email"
-        label="Correo"
-        ></app-custom-input>
-
-        <div class="validators" *ngIf="form.controls.email.errors && form.controls.email.touched">
-
-            <div *ngIf="form.controls.email.errors?. ['required']">El correo es requerido</div>
-            <div *ngIf="form.controls.email.errors?. ['email']">Ingrese un correo valido</div>
-        </div>
-        <app-custom-input 
-        
-        icon="lock-closed-outline"
-        [control]="form.controls.password"
-        type="password"
-        label="Contraseña"
-        ></app-custom-input>
-
-        <div class="validators" *ngIf="form.controls.password.errors && form.controls.password.touched">
-
-            <div *ngIf="form.controls.password.errors?. ['required']">La contraseña es requerida</div>
-    
-        </div>
-
-        <ion-button expand="block" mode="ios" class="submit" type="submit" [disabled]="form.invalid">
-            Ingresar
-        </ion-button>
-
-        </form>
-
-</div>    
-
-
-
-    
+    <ion-button expand="block" class="ion-margin-top" type="submit">
+      Iniciar sesión
+    </ion-button>
+  </form>
 </ion-content>
-    

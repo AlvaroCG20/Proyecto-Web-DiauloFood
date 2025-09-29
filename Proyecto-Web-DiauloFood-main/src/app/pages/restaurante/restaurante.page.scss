@@ -1,0 +1,18 @@
+
+.rest-header .topbar { --background: var(--ion-color-primary); --color:#fff; display:flex; align-items:center; gap:12px; padding:8px 12px; border-top-left-radius:8px; border-top-right-radius:8px; }
+.hero-logo-wrap.small { background:#fff; border-radius:50%; padding:8px; height:56px; width:56px; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.hero-logo { height:38px; width:auto; }
+.nav-cards { display:flex; gap:12px; margin-left:8px; }
+.nav-card { background:#fff; color:#333; display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:700; box-shadow:0 2px 4px rgba(0,0,0,.15); }
+.nav-card img { height:24px; width:24px; object-fit:contain; }
+.nav-card.active { outline: 2px solid #fff; }
+.rest-content { background:#f1f2f4; }
+.toolbar-row { display:flex; align-items:center; justify-content:center; position:relative; margin-top:8px; }
+.toolbar-row h1 { color:#b45b14; font-size:28px; font-weight:800; margin:16px 0; }
+.filters-icon { position:absolute; right:8px; top:0; height:22px; width:22px; opacity:.8; }
+.mesas { display:grid; grid-template-columns: repeat(4, minmax(0, 120px)); gap:18px; justify-content:start; padding: 8px 12px 32px; }
+.mesa { border:none; border-radius:8px; font-weight:800; font-size:18px; height:56px; box-shadow:0 3px 4px rgba(0,0,0,.25); }
+.mesa.disponible { background:#33b44a; color:#fff; }
+.mesa.ocupada { background:#d9534f; color:#fff; }
+.mesa.reservada { background:#d9c34f; color:#333; }
+.footer-rest { text-align:center; color:#fff; background:var(--ion-color-primary); border-radius:8px; padding:10px 0; margin-top:24px; }

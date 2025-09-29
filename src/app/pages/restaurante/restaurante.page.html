@@ -1,0 +1,34 @@
+
+<ion-header class="rest-header">
+  <ion-toolbar class="topbar">
+    <div class="hero-logo-wrap small">
+      <img src="assets/img/logo-diaulo.png" alt="Diaulo Food" class="hero-logo">
+    </div>
+    <nav class="nav-cards">
+      <a routerLink="/restaurante" class="nav-card active">
+        <img src="assets/img/icon-cubiertos.png" alt="Restaurante">
+        <span>Restaurante</span>
+      </a>
+      <a routerLink="/productos" class="nav-card">
+        <img src="assets/img/icon-sandwich.png" alt="Productos">
+        <span>Productos</span>
+      </a>
+      <a routerLink="/administrar" class="nav-card">
+        <img src="assets/img/icon-config-gear.png" alt="Administrar">
+        <span>Administrar</span>
+      </a>
+    </nav>
+    <div class="spacer"></div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding rest-content">
+  <div class="toolbar-row">
+    <h1>Restaurante</h1>
+    <img src="assets/img/icon-filters.png" alt="Filtros" class="filters-icon">
+  </div>
+  <div class="mesas">
+    <button class="mesa" *ngFor="let mesa of mesas" [ngClass]="mesa.estado">{{ mesa.numero }}</button>
+  </div>
+  <footer class="footer-rest">© 2025 DiauloFood. Todos los derechos reservados.</footer>
+</ion-content>
