@@ -89,15 +89,11 @@ La navegación principal incluye:
 ### Diagrama de navegación
 ![Arquitectura de navegación](image.png)
 
-*(Guarda la imagen que me enviaste en `src/assets/img/arquitectura-navegacion.png` para que se muestre en el README).*
-
----
-
 ## Diseño de prototipos
 Se realizaron prototipos en **Figma**, contemplando al menos 7 pantallas (web y móvil).  
 
 👉 [https://www.figma.com/design/CuK58ZDfp13Tno1BijVZMr/Mockups-Web-Parcial-1?node-id=0-1&t=xrWhksod8hu37pp9-1](#) 
-## Navegación y Experiencia de Usuario (1.4)
+## Navegación y Experiencia de Usuario
 
 ### Principios de UX
 - **Consistencia**: todos los botones de mesas mantienen el mismo estilo, variando solo el color según el estado.  
@@ -118,8 +114,8 @@ Se realizaron prototipos en **Figma**, contemplando al menos 7 pantallas (web y 
 - **Ionic Framework** (v7+)  
 - **Angular** (v15+)  
 - **TypeScript**  
-- **SASS** (estilos)  
-- **RxJS** (manejo reactivo)  
-- **Angular Router** (navegación)  
-- **Capacitor** (plugins nativos)  
-- **Bootstrap** (estilos adicionales si aplica)  
+
+
+##IMPORTANTE
+- **Al momento de querer abrir el proyecto en un local host propio recordar hacer uso de la carpeta Proyecto-Web-DiauloFood-main**
+
