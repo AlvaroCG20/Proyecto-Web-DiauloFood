@@ -1,0 +1,51 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="header-restaurant-toolbar">
+    <div class="header-content">
+      
+      <!-- Logo -->
+      <div class="header-item logo-item">
+        <div class="logo-circle">
+          <img src="assets/img/logo transparente.png" alt="Diaulo Food" class="logo">
+        </div>
+        <div class="item-label logo-label">
+          <span class="logo-title">DIAULO FOOD</span>
+          <span class="logo-subtitle">RESTAURANT</span>
+        </div>
+      </div>
+
+      <!-- Restaurante (Todos pueden ver) -->
+      <div class="header-item" 
+           routerLink="/dashboard" 
+           routerLinkActive="active"
+           *ngIf="hasAccess('dashboard')">
+        <div class="item-card">
+          <ion-icon name="restaurant-outline" class="item-icon"></ion-icon>
+        </div>
+        <span class="item-label">Restaurante</span>
+      </div>
+
+      <!-- Productos (Todos pueden ver) -->
+      <div class="header-item" 
+           routerLink="/products" 
+           routerLinkActive="active"
+           *ngIf="hasAccess('products')">
+        <div class="item-card">
+          <ion-icon name="fast-food-outline" class="item-icon"></ion-icon>
+        </div>
+        <span class="item-label">Productos</span>
+      </div>
+
+      <!-- Administrar (SOLO ADMIN) -->
+      <div class="header-item" 
+           routerLink="/admin" 
+           routerLinkActive="active"
+           *ngIf="hasAccess('admin')">
+        <div class="item-card">
+          <ion-icon name="settings-outline" class="item-icon"></ion-icon>
+        </div>
+        <span class="item-label">Administrar</span>
+      </div>
+
+    </div>
+  </ion-toolbar>
+</ion-header>

@@ -1,0 +1,102 @@
+<ion-content>
+  <div class="auth-page">
+    <!-- Texto superior izquierda -->
+    <div class="page-title">Inicio sesión</div>
+
+    <!-- Card de login -->
+    <div class="auth-card">
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="assets/img/logo transparente.png" alt="Diablo Food" class="logo">
+      </div>
+      
+      <!-- Título -->
+  
+      <h1 class="card-title">Iniciar Sesión</h1>
+      <!-- Formulario -->
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+      
+      <!-- Correo electrónico -->
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <ion-input 
+          type="email" 
+          formControlName="email"
+          placeholder="nombre@ejemplo.com"
+          class="form-input"
+          [class.input-error]="submitted && f['email'].errors">
+        </ion-input>
+        
+        <!-- Mensajes de error del email -->
+        <div *ngIf="submitted && f['email'].errors" class="error-messages">
+          <div class="error-message" *ngIf="f['email'].errors['required']">
+            ⚠️ Por favor, completa este campo
+          </div>
+          <div class="error-message" *ngIf="f['email'].errors['email'] || f['email'].errors['pattern']">
+            ⚠️ Ingresa un correo válido (ejemplo: usuario@ejemplo.com)
+          </div>
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <ion-input 
+          type="password" 
+          formControlName="password"
+          placeholder="••••••••"
+          class="form-input"
+          [class.input-error]="submitted && f['password'].errors">
+        </ion-input>
+        
+        <!-- Mensajes de error de la contraseña -->
+        <div *ngIf="submitted && f['password'].errors" class="error-messages">
+          <div class="error-message" *ngIf="f['password'].errors['required']">
+            ⚠️ Por favor, completa este campo
+          </div>
+          <div class="error-message" *ngIf="f['password'].errors['minlength']">
+            ⚠️ La contraseña debe tener al menos 6 caracteres
+          </div>
+        </div>
+      </div>
+
+      <!-- Recordarme y Olvidaste contraseña -->
+      <div class="form-options">
+        <ion-checkbox 
+          formControlName="remember"
+          class="remember-checkbox" 
+          labelPlacement="end">
+          Recuérdame
+        </ion-checkbox>
+          <a href="javascript:void(0)" class="forgot-password">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <!-- Botón Iniciar Sesión -->
+      <ion-button 
+        type="submit"
+        expand="block" 
+        class="btn-login"
+        shape="round">
+        Iniciar Sesión
+      </ion-button>
+
+      <!-- Separador -->
+      <div class="divider">
+        <span class="divider-text">O continúa con</span>
+      </div>
+
+      <!-- Botón Google -->
+      <ion-button 
+        type="button"
+        expand="block" 
+        fill="outline"
+        class="btn-google"
+        shape="round"
+        (click)="onGoogleLogin()">
+        <ion-icon slot="start" name="logo-google"></ion-icon>
+        Google
+      </ion-button>
+    </form>
+    </div>
+  </div>
+</ion-content>

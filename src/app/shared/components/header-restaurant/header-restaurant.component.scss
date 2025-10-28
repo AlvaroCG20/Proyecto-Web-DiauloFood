@@ -1,0 +1,199 @@
+ion-header {
+  &.ion-no-border {
+    --border-width: 0;
+  }
+}
+
+.header-restaurant-toolbar {
+  --background: #ff6b35;
+  --padding-start: 0;
+  --padding-end: 0;
+  --min-height: 80px;  // ← Era 120px, ahora 80px
+  
+  ion-toolbar {
+    --background: #ff6b35;
+  }
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 12px 40px;  // ← Era 20px, ahora 12px
+  background: #ff6b35;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.logo-item {
+  cursor: default;
+  
+  &:hover {
+    transform: none;
+  }
+}
+
+// Logo circular
+.logo-circle {
+  background: white;
+  border-radius: 50%;
+  width: 70px;   // ← Era 100px, ahora 70px
+  height: 70px;  // ← Era 100px, ahora 70px
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  margin-bottom: 4px;  // ← Era 8px, ahora 4px
+  
+  .logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+// Cards rectangulares con íconos
+.item-card {
+  background: white;
+  border-radius: 16px;  // ← Era 20px, ahora 16px
+  width: 90px;   // ← Era 110px, ahora 90px
+  height: 60px;  // ← Era 80px, ahora 60px
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  
+  .item-icon {
+    font-size: 36px;  // ← Era 48px, ahora 36px
+    color: #333;
+  }
+}
+
+.header-item:hover .item-card {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  transform: scale(1.02);
+}
+
+// Labels de texto
+.item-label {
+  color: white;
+  font-size: 14px;  // ← Era 16px, ahora 14px
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+// Label especial del logo
+.logo-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;  // ← Era 2px, ahora 1px
+  
+  .logo-title {
+    font-size: 11px;  // ← Era 13px, ahora 11px
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: white;
+  }
+  
+  .logo-subtitle {
+    font-size: 9px;  // ← Era 11px, ahora 9px
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: white;
+  }
+}
+
+// Responsive
+@media (max-width: 992px) {
+  .header-content {
+    padding: 10px 20px;
+    gap: 10px;
+  }
+  
+  .logo-circle {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .item-card {
+    width: 75px;
+    height: 55px;
+    
+    .item-icon {
+      font-size: 32px;
+    }
+  }
+  
+  .item-label {
+    font-size: 13px;
+  }
+  
+  .logo-title {
+    font-size: 10px;
+  }
+  
+  .logo-subtitle {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 8px 16px;
+    gap: 8px;
+  }
+  
+  .logo-circle {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .item-card {
+    width: 65px;
+    height: 50px;
+    border-radius: 14px;
+    
+    .item-icon {
+      font-size: 28px;
+    }
+  }
+  
+  .item-label {
+    font-size: 12px;
+  }
+  
+  .logo-title {
+    font-size: 9px;
+  }
+  
+  .logo-subtitle {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .item-label {
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,154 @@
+<ion-content>
+  <app-header-restaurant></app-header-restaurant>
+  
+  <div class="tables-container">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <ion-button fill="clear" class="btn-back" routerLink="/admin">
+        <ion-icon slot="start" name="arrow-back"></ion-icon>
+        Volver
+      </ion-button>
+      
+      <h1 class="page-title">Gestión de Mesas</h1>
+      
+      <ion-button class="btn-new-table" (click)="openTableModal()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Nueva Mesa
+      </ion-button>
+    </div>
+
+    <!-- Tabla de mesas -->
+    <div class="tables-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Info</th>
+            <th>Estado</th>
+            <th>Cliente</th>
+            <th>Garzón Asignado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let table of tables">
+            <td>
+              <div class="table-number">
+                <span class="number-badge">Mesa {{ table.number }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="info-text" [ngClass]="table.status">
+                {{ getTableInfo(table) }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="table.status">
+                {{ getStatusLabel(table.status) }}
+              </span>
+            </td>
+            <td>{{ table.customerName || '-' }}</td>
+            <td>{{ table.waiter || '-' }}</td>
+            <td class="actions">
+              <ion-button fill="clear" size="small" (click)="editTable(table)">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
+              <ion-button 
+                fill="clear" 
+                size="small" 
+                color="danger" 
+                (click)="deleteTable(table.id)"
+                [disabled]="table.status !== 'available'">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </td>
+          </tr>
+          
+          <!-- Mensaje si no hay mesas -->
+          <tr *ngIf="tables.length === 0">
+            <td colspan="6" class="no-tables">
+              No hay mesas registradas. Agrega una nueva.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Info adicional -->
+    <div class="info-section">
+      <div class="info-card">
+        <h3>📊 Resumen</h3>
+        <div class="stats-grid">
+          <div class="stat">
+            <span class="stat-value">{{ tables.length }}</span>
+            <span class="stat-label">Total Mesas</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value available">{{ getTablesByStatus('available') }}</span>
+            <span class="stat-label">Disponibles</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value occupied">{{ getTablesByStatus('occupied') }}</span>
+            <span class="stat-label">Ocupadas</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value reserved">{{ getTablesByStatus('reserved') }}</span>
+            <span class="stat-label">Reservadas</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="info-card warning">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <div>
+          <h4>⚠️ Importante</h4>
+          <p>Solo puedes eliminar mesas que estén <strong>disponibles</strong>. Las mesas ocupadas o reservadas deben cerrarse primero desde el Dashboard.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL PARA AÑADIR/EDITAR MESA -->
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="closeModal()">
+    <ng-template>
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h2 class="modal-title">{{ editingTable !== null ? 'Editar' : 'Nueva' }} Mesa</h2>
+          <ion-button fill="clear" class="btn-close-modal" (click)="closeModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- Número de Mesa -->
+          <div class="form-row">
+            <label class="form-label">Número de Mesa *</label>
+            <input 
+              type="number" 
+              [(ngModel)]="currentTable.number" 
+              class="form-input" 
+              placeholder="Ej: 1"
+              min="1">
+          </div>
+
+          <!-- Botón Guardar -->
+          <ion-button 
+            expand="block" 
+            class="btn-save" 
+            (click)="saveTable()"
+            [disabled]="!isFormValid()">
+            {{ editingTable !== null ? 'Actualizar' : 'Crear' }} Mesa
+          </ion-button>
+
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+  
+  <app-footer-dashboard></app-footer-dashboard>
+</ion-content>

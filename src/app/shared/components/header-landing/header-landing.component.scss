@@ -1,0 +1,98 @@
+ion-header {
+  &.ion-no-border {
+    --border-width: 0;
+  }
+}
+
+.header-landing-toolbar {
+  --background: #ff6b35; // Naranja Diablo Food
+  --padding-start: 0;
+  --padding-end: 0;
+  --min-height: 80px;
+  
+  ion-toolbar {
+    --background: #ff6b35;
+  }
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #ff6b35;
+}
+
+.logo-container {
+  background: white;
+  border-radius: 50%;
+  width: 100px;   // ← Contenedor más grande
+  height: 100px;  // ← Contenedor más grande
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;   // ← Menos padding = más zoom
+  
+  .logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position:relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: white;
+      transition: width 0.3s ease;
+    }
+    
+    &:hover {
+      opacity: 0.8;
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Responsive para móviles
+@media (max-width: 576px) {
+  .nav-links {
+    gap: 16px;
+    
+    .nav-link {
+      font-size: 14px;
+    }
+  }
+  
+  .logo-container {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .header-content {
+    padding: 12px 16px;
+  }
+}
