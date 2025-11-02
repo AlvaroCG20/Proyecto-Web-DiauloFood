@@ -1,21 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth'; 
 
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
-  standalone:false
+  standalone: false
 })
 export class AuthPage implements OnInit {
-  
   loginForm: FormGroup;
   submitted = false;
+  loading = false;
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService 
   ) {
     // Inicializar el formulario con validaciones
     this.loginForm = this.formBuilder.group({
@@ -32,41 +34,44 @@ export class AuthPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
-  // Getter para acceder fácilmente a los campos del formulario
   get f() {
     return this.loginForm.controls;
   }
 
-  // Función de login
+
   onLogin() {
     this.submitted = true;
 
-    // Si el formulario es inválido, no hacer nada
-    if (this.loginForm.invalid) {
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
-    // Aquí obtienes los valores del formulario
-    const email = this.loginForm.value.email;
-    const password = this.loginForm.value.password;
-    const remember = this.loginForm.value.remember;
+    this.loading = true;
 
-    console.log('Email:', email);
-    console.log('Password:', password);
-    console.log('Remember:', remember);
+    const datos = {
+      email: this.loginForm.value.email,
+      contrasena: this.loginForm.value.password
+    };
 
-    // NAVEGAR A LA SIGUIENTE PÁGINA
-    // Cambia '/restaurant' por la ruta que necesites
-    this.router.navigate(['/dashboard']);
+
+    this.authService.login(datos).subscribe({
+      next: (res: any) => {
+        console.log('✅ Login exitoso:', res);
+
+
+        this.router.navigate(['/dashboard']); 
+      },
+      error: (err: any) => {
+        console.error('❌ Error en login:', err);
+        alert('Error al iniciar sesión. Revisa tus credenciales.');
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
   }
 
-  // Login con Google (opcional, para después)
   onGoogleLogin() {
     console.log('Google login clicked');
-    // this.router.navigate(['/restaurant']);
   }
-
 }
