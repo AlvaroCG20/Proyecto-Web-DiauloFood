@@ -1,19 +1,31 @@
 const express = require('express');
+const mysql = require('mysql2');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
-// Ejemplo de endpoint
-app.get('/', (req, res) => {
-  res.send('Servidor funcionando correctamente 🚀');
+const conexion = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'diaulofood'
 });
 
-app.get('/api/diaulofood', (req, res) => {
-  res.json([{ id: 1, nombre: 'Benjamín' }]);
+conexion.connect(err => {
+    if (err) {
+        console.error('Error al conectar con la base de datos:', err);
+        return;
+    }
+    console.log('Conexión exitosa a DiauloFood');
 });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Servidor backend corriendo en puerto ${PORT}`));
+app.listen(3000, () => {
+    console.log('Servidor corriendo en el puerto 3000');
+});
+
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
+
+module.exports = conexion;
