@@ -19,3 +19,6 @@
 ## Pruebas en PostMan:
 <img width="1362" height="697" alt="Captura de pantalla 2025-11-02 224219" src="https://github.com/user-attachments/assets/ce51983e-16c5-4d24-a93f-36b4e3eb7375" />
 
+<img width="797" height="490" alt="Captura de pantalla 2025-11-02 223011" src="https://github.com/user-attachments/assets/d52a26ab-8636-4c00-bc9d-e2808d1c0a12" />
+
+<img width="1362" height="697" alt="Captura de pantalla 2025-11-02 224219" src="https://github.com/user-attachments/assets/1aa233cf-6bf1-4691-a138-21309feab5a9" />
