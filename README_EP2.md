@@ -16,4 +16,6 @@
 - Se establecieron las autenticaciones con JWT en la carpeta app/routes.
 - Se actualizó el apartado de garzones para que se mostraran los cambios en este campo y se reflejaran en la base de datos.
 
-## 
+## Pruebas en PostMan:
+<img width="1362" height="697" alt="Captura de pantalla 2025-11-02 224219" src="https://github.com/user-attachments/assets/ce51983e-16c5-4d24-a93f-36b4e3eb7375" />
+
