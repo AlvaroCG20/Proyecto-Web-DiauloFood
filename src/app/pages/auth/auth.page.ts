@@ -56,11 +56,17 @@ export class AuthPage implements OnInit {
 
     this.authService.login(datos).subscribe({
       next: (res: any) => {
-        console.log('✅ Login exitoso:', res);
-
-
-        this.router.navigate(['/dashboard']); 
-      },
+        if (res.token) {
+          localStorage.setItem('token', res.token);
+          console.log('Token recibido:', res.token);
+          console.log('✅ Login exitoso:', res);
+          this.router.navigate(['/dashboard']);
+          }     
+        else {
+          alert('No se recibió token, revisa el backend.');
+          }
+}
+,
       error: (err: any) => {
         console.error('❌ Error en login:', err);
         alert('Error al iniciar sesión. Revisa tus credenciales.');

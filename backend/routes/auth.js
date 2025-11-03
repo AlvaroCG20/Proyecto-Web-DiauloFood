@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const conexion = require('../database/conexion.js'); // ✅ importar desde la nueva ruta
+const conexion = require('../database/conexion.js'); 
+
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'XakQLo013_3131xwl1kro'; 
+
 
 router.post('/login', (req, res) => {
   const { email, contrasena } = req.body;
-  console.log('🟢 Datos recibidos en login:', req.body);
 
   if (!email || !contrasena) {
     return res.status(400).json({ mensaje: 'Faltan credenciales' });
@@ -17,14 +20,26 @@ router.post('/login', (req, res) => {
       return res.status(500).json({ mensaje: 'Error en el servidor' });
     }
 
-    console.log('🟣 Resultado de la query:', results);
-
-    if (results.length > 0) {
-      res.status(200).json({ mensaje: 'Inicio de sesión exitoso', usuario: results[0] });
-    } else {
-      res.status(401).json({ mensaje: 'Credenciales incorrectas' });
+    if (results.length === 0) {
+      return res.status(401).json({ mensaje: 'Credenciales incorrectas' });
     }
+
+
+    const usuario = results[0];
+    const token = jwt.sign(
+      { id: usuario.rut, email: usuario.email, rol: usuario.id_rol },
+      SECRET_KEY,
+      { expiresIn: '2h' } 
+    );
+
+    console.log('🟢 Usuario autenticado. Enviando token...');
+    console.log('Token generado:', token);
+
+    res.status(200).json({
+      mensaje: 'Inicio de sesión exitoso',
+      usuario,
+      token, 
+    });
   });
 });
-
 module.exports = router;

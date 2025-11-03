@@ -9,6 +9,11 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
+const garzonesRoutes = require('./routes/garzones');
+app.use('/garzones', garzonesRoutes);
+
 app.listen(3000, () => {
   console.log('Servidor corriendo en el puerto 3000');
 });
+
+

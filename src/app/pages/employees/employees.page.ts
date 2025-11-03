@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { EmployeesService } from 'src/app/services/employees';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface Employee {
   id: number;
@@ -39,7 +41,8 @@ export class EmployeesPage implements OnInit {
 
   currentUser: any = {};
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private employeesService: EmployeesService) { }
+
 
   ngOnInit() {
     this.loadCurrentUser();
@@ -60,52 +63,30 @@ export class EmployeesPage implements OnInit {
   }
 
   loadEmployees() {
-    const stored = localStorage.getItem('employees');
-    if (stored) {
-      this.employees = JSON.parse(stored);
-    } else {
-      // Datos iniciales
-      this.employees = [
-        {
-          id: 1,
-          name: 'Juan Pérez',
-          email: 'juan.perez@diablofood.com',
-          roleType: 'admin',
-          avatar: 'https://ui-avatars.com/api/?name=Juan+Perez&background=ff6b35&color=fff&size=200',
-          joinDate: '01/01/2024'
-        },
-        {
-          id: 2,
-          name: 'María González',
-          email: 'maria.gonzalez@diablofood.com',
-          roleType: 'waiter',
-          avatar: 'https://ui-avatars.com/api/?name=Maria+Gonzalez&background=4caf50&color=fff&size=200',
-          joinDate: '15/02/2024',
-          assignedTables: '5, 6, 7, 8'
-        },
-        {
-          id: 3,
-          name: 'Carlos Ramírez',
-          email: 'carlos.ramirez@diablofood.com',
-          roleType: 'waiter',
-          avatar: 'https://ui-avatars.com/api/?name=Carlos+Ramirez&background=2196F3&color=fff&size=200',
-          joinDate: '10/03/2024',
-          assignedTables: '9, 10, 11'
-        },
-        {
-          id: 4,
-          name: 'Ana Torres',
-          email: 'ana.torres@diablofood.com',
-          roleType: 'waiter',
-          avatar: 'https://ui-avatars.com/api/?name=Ana+Torres&background=9c27b0&color=fff&size=200',
-          joinDate: '20/03/2024',
-          assignedTables: '1, 2, 3, 4'
-        }
-      ];
-      this.saveToStorage();
+  this.employeesService.obtenerGarzones().subscribe({
+    next: (res: any[]) => {
+      console.log('✅ Garzones cargados desde la base de datos:', res);
+
+      // Transformamos los datos que vienen de la BD al formato del front
+      this.employees = res.map(usuario => ({
+        id: usuario.id,
+        name: usuario.nombre_usuario,
+        email: usuario.email,
+        roleType: 'waiter',
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario.nombre_usuario)}&background=4caf50&color=fff&size=200`,
+        joinDate: new Date().toLocaleDateString('es-CL'),
+        assignedTables: '' // aún no se gestionan mesas desde BD
+      }));
+
+      this.filterGarzones();
+    },
+    error: (err: any) => {
+      console.error('❌ Error al cargar garzones:', err);
+      alert('Error al obtener los garzones desde la base de datos');
     }
-    this.filterGarzones();
-  }
+  });
+}
+
 
   saveToStorage() {
     localStorage.setItem('employees', JSON.stringify(this.employees));
@@ -143,29 +124,49 @@ export class EmployeesPage implements OnInit {
 
   // ========== CRUD ==========
   saveEmployee() {
-    if (!this.isFormValid()) return;
+  if (!this.isFormValid()) return;
 
-    // Generar avatar
-    this.currentEmployee.avatar = 
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(this.currentEmployee.name)}&background=4caf50&color=fff&size=200`;
+  // Generar avatar
+  this.currentEmployee.avatar = 
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(this.currentEmployee.name)}&background=4caf50&color=fff&size=200`;
 
-    if (this.editingEmployee) {
-      // Actualizar existente
-      const index = this.employees.findIndex(e => e.id === this.currentEmployee.id);
-      if (index !== -1) {
-        this.employees[index] = { ...this.currentEmployee };
-      }
-    } else {
-      // Agregar nuevo
-      this.employees.push({ ...this.currentEmployee });
+  // Si está editando, actualizar localmente
+  if (this.editingEmployee) {
+    const index = this.employees.findIndex(e => e.id === this.currentEmployee.id);
+    if (index !== -1) {
+      this.employees[index] = { ...this.currentEmployee };
+      this.saveToStorage();
+      this.filterGarzones();
+      this.closeModal();
+      console.log('✅ Garzón actualizado');
     }
+  } else {
+    // 🔥 Nuevo garzón → guardar en la base de datos
+    const nuevoGarzon = {
+      nombre_usuario: this.currentEmployee.name,
+      email: this.currentEmployee.email,
+      contrasena: this.currentEmployee.password
+    };
 
-    this.saveToStorage();
-    this.filterGarzones();
-    this.closeModal();
-    
-    console.log(this.editingEmployee ? '✅ Garzón actualizado' : '✅ Garzón creado');
+    this.employeesService.agregarGarzon(nuevoGarzon).subscribe({
+      next: (res: any) => {
+        console.log('✅ Garzón agregado en la base de datos:', res);
+        alert('Garzón creado correctamente');
+
+        // También lo añadimos a la lista local
+        this.employees.push({ ...this.currentEmployee });
+        this.saveToStorage();
+        this.filterGarzones();
+        this.closeModal();
+      },
+      error: (err: any) => {
+        console.error('❌ Error al agregar garzón:', err);
+        alert('Error al registrar el garzón');
+      }
+    });
   }
+}
+
 
   editEmployee(employee: Employee) {
     this.openEmployeeModal(employee);
@@ -201,5 +202,6 @@ export class EmployeesPage implements OnInit {
     
     return hasBasicInfo && hasPassword;
   }
-
+ 
 }
+
