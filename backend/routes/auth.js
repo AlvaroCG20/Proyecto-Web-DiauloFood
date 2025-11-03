@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const SECRET_KEY = 'XakQLo013_3131xwl1kro'; 
 
 
+
 router.post('/login', (req, res) => {
   const { email, contrasena } = req.body;
 
@@ -13,6 +14,7 @@ router.post('/login', (req, res) => {
     return res.status(400).json({ mensaje: 'Faltan credenciales' });
   }
 
+  
   const sql = 'SELECT * FROM usuarios WHERE email = ? AND contrasena = ?';
   conexion.query(sql, [email, contrasena], (err, results) => {
     if (err) {
