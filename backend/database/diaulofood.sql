@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-11-2025 a las 21:46:43
+-- Tiempo de generación: 03-11-2025 a las 02:45:53
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -72,6 +72,14 @@ CREATE TABLE `roles` (
   `nombre_rol` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `roles`
+--
+
+INSERT INTO `roles` (`id_rol`, `nombre_rol`) VALUES
+(1, 'garzon'),
+(2, 'admin');
+
 -- --------------------------------------------------------
 
 --
@@ -79,14 +87,23 @@ CREATE TABLE `roles` (
 --
 
 CREATE TABLE `usuarios` (
-  `rut` int(11) NOT NULL,
+  `id` int(11) NOT NULL,
+  `rut` int(11) DEFAULT NULL,
   `nombre_usuario` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `region` varchar(50) NOT NULL,
-  `comuna` varchar(50) NOT NULL,
+  `region` varchar(50) DEFAULT NULL,
+  `comuna` varchar(50) DEFAULT NULL,
   `contrasena` varchar(100) NOT NULL,
   `id_rol` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `rut`, `nombre_usuario`, `email`, `region`, `comuna`, `contrasena`, `id_rol`) VALUES
+(2, 213368478, 'benjamin palamara', 'benjapalamara@gmail.com', 'valparaiso', 'vina del mar', 'benjap', 1),
+(3, 0, 'ignacio lopez', 'nachitopop@gmail.com', NULL, NULL, '123456', 1);
 
 -- --------------------------------------------------------
 
@@ -95,7 +112,7 @@ CREATE TABLE `usuarios` (
 --
 
 CREATE TABLE `usuarios_mesas` (
-  `rut` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
   `numero_mesa` int(11) NOT NULL,
   `fecha_asignacion` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -133,14 +150,16 @@ ALTER TABLE `roles`
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`rut`),
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_rut` (`rut`),
+  ADD UNIQUE KEY `unique_email` (`email`),
   ADD KEY `id_rol` (`id_rol`);
 
 --
 -- Indices de la tabla `usuarios_mesas`
 --
 ALTER TABLE `usuarios_mesas`
-  ADD PRIMARY KEY (`rut`,`numero_mesa`),
+  ADD PRIMARY KEY (`id_usuario`,`numero_mesa`),
   ADD KEY `numero_mesa` (`numero_mesa`);
 
 --
@@ -163,7 +182,13 @@ ALTER TABLE `productos`
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas
@@ -186,7 +211,7 @@ ALTER TABLE `usuarios`
 -- Filtros para la tabla `usuarios_mesas`
 --
 ALTER TABLE `usuarios_mesas`
-  ADD CONSTRAINT `usuarios_mesas_ibfk_1` FOREIGN KEY (`rut`) REFERENCES `usuarios` (`rut`),
+  ADD CONSTRAINT `usuarios_mesas_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
   ADD CONSTRAINT `usuarios_mesas_ibfk_2` FOREIGN KEY (`numero_mesa`) REFERENCES `mesas` (`numero_mesa`);
 COMMIT;
 
