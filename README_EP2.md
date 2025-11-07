@@ -1,3 +1,19 @@
+# Como entrar iniciar el proyecto
+
+- Para acceder debe correr la base de datos en xampp, importe diaulofood.sql (archivo ubicado dentro de la carpeta ../backend/database) , luego utilice la siguiente query para crear el usuario para acceder:
+insert into usuarios(email, rut, nombre_usuario, id_rol, contrasena) values ('ejemplo@gmail.com', 123456789, 'usuario ejemplo', 1, '123456')
+
+- Una vez la base de datos esté activa, en la terminal, vaya a la carpeta backend usando 'cd backend' y ejecute
+el comando 'node index.js', deberia aparecer el mensaje "Conectado a la base de datos" y "Corriendo en el puerto 3000"
+
+- Luego, en una nueva terminal en la carpeta principal del proyecto ejecute 'ionic serve'
+
+
+- Una vez iniciada la página haga click en el botón "Inicar Sesion" y utilice las credenciales:
+
+email: ejemplo@gmail.com
+contraseña: 123456
+
 # Implementaciones de la segunda entrega
 ## Frontend
 - En la sección de administrador se habilitó la opción de cambiar usuarios.
