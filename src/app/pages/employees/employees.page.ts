@@ -173,16 +173,27 @@ export class EmployeesPage implements OnInit {
   }
 
   deleteEmployee(id: number) {
-    const employee = this.employees.find(e => e.id === id);
-    if (!employee) return;
+  const employee = this.employees.find(e => e.id === id);
+  if (!employee) return;
 
-    if (confirm(`¿Estás seguro de eliminar a ${employee.name}?\n\nEsta acción no se puede deshacer.`)) {
-      this.employees = this.employees.filter(e => e.id !== id);
-      this.saveToStorage();
-      this.filterGarzones();
-      console.log('✅ Garzón eliminado');
-    }
+  if (!confirm(`¿Estás seguro de eliminar a ${employee.name}?\n\nEsta acción no se puede deshacer.`)) {
+    return;
   }
+
+  this.employeesService.eliminarGarzon(id).subscribe({
+    next: (res) => {
+      console.log('🗑️ Garzón eliminado en BD:', res);
+
+      // Actualizar lista en el frontend consultando la BD nuevamente
+      this.loadEmployees();
+    },
+    error: (err) => {
+      console.error('❌ Error al eliminar garzón:', err);
+      alert(err.error?.mensaje ?? 'No se pudo eliminar el garzón.');
+    }
+  });
+}
+
 
   // ========== HELPERS ==========
   getNextId(): number {
