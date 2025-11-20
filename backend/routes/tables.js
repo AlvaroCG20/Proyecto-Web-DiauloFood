@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const conexion = require('../database/conexion.js');  // ajusta a tu archivo de conexión
+const conexion = require('../database/conexion.js');
 
 // GET /tables
 router.get('/', (req, res) => {

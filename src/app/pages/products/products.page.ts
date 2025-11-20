@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { ProductsService, BackendProduct } from 'src/app/services/products.service';
 
 interface Product {
-  id: number;
-  name: string;
-  cost: number;
-  margin: number;
-  price: number;
+  id: number;      // id_producto
+  name: string;    // nombre_producto
+  cost: number;    // costo_compra
+  margin: number;  // margen_ganancia
+  price: number;   // precio_venta
 }
 
 @Component({
@@ -32,13 +33,16 @@ export class ProductsPage implements OnInit {
   sortColumn: string = 'id';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor() { }
+  constructor(
+    private productsService: ProductsService
+  ) { }
 
   ngOnInit() {
     this.loadProducts();
   }
 
   // ========== VERIFICAR SI ES ADMIN ==========
+
   isAdmin(): boolean {
     const stored = localStorage.getItem('currentUser');
     if (stored) {
@@ -48,29 +52,34 @@ export class ProductsPage implements OnInit {
     return false;
   }
 
-  // ========== GESTIÓN DE DATOS (localStorage) ==========
-  loadProducts() {
-    const stored = localStorage.getItem('products');
-    if (stored) {
-      this.products = JSON.parse(stored);
-    } else {
-      // Datos iniciales de ejemplo
-      this.products = [
-        { id: 1, name: 'Bebida', cost: 1000, margin: 600, price: 1600 },
-        { id: 2, name: 'Papas Fritas', cost: 1000, margin: 2600, price: 3600 },
-        { id: 3, name: 'Ensalada', cost: 1200, margin: 3000, price: 4200 }
-      ];
-      this.saveToStorage();
-    }
-    this.sortedProducts = [...this.products];
-    this.applySort();
-  }
+  // ========== CARGAR PRODUCTOS DESDE BACKEND ==========
 
-  saveToStorage() {
-    localStorage.setItem('products', JSON.stringify(this.products));
+  loadProducts() {
+    this.productsService.getProducts().subscribe({
+      next: (data: BackendProduct[]) => {
+        this.products = data.map((item) => ({
+          id: item.id_producto,
+          name: item.nombre_producto,
+          cost: item.costo_compra,
+          margin: item.margen_ganancia,
+          price: item.precio_venta
+        }));
+
+        this.sortedProducts = [...this.products];
+        this.applySort();
+
+        console.log('✅ Productos cargados desde backend:', this.products.length);
+      },
+      error: (err) => {
+        console.error('Error al cargar productos desde backend', err);
+        this.products = [];
+        this.sortedProducts = [];
+      }
+    });
   }
 
   // ========== MODAL ==========
+
   openProductModal(product?: Product) {
     // Solo admin puede abrir el modal
     if (!this.isAdmin()) {
@@ -84,7 +93,7 @@ export class ProductsPage implements OnInit {
     } else {
       this.editingProduct = null;
       this.currentProduct = {
-        id: this.getNextId(),
+        id: 0, // lo asigna la BD
         name: '',
         cost: 0,
         margin: 0,
@@ -106,7 +115,8 @@ export class ProductsPage implements OnInit {
     };
   }
 
-  // ========== CRUD ==========
+  // ========== CRUD (USANDO BACKEND) ==========
+
   saveProduct() {
     if (!this.isAdmin()) {
       alert('No tienes permisos para realizar esta acción');
@@ -115,23 +125,44 @@ export class ProductsPage implements OnInit {
 
     if (!this.isFormValid()) return;
 
+    // precio_venta = cost + margin (lo mismo que ya haces con calculatePrice)
+    const payload: Partial<BackendProduct> = {
+      nombre_producto: this.currentProduct.name,
+      costo_compra: this.currentProduct.cost,
+      precio_venta: this.currentProduct.price,
+      // margen_ganancia puede calcularlo el backend,
+      // pero si quieres igual lo mandamos:
+      margen_ganancia: this.currentProduct.margin,
+      descripcion: null
+    };
+
     if (this.editingProduct) {
       // Actualizar producto existente
-      const index = this.products.findIndex(p => p.id === this.currentProduct.id);
-      if (index !== -1) {
-        this.products[index] = { ...this.currentProduct };
-      }
+      this.productsService.updateProduct(this.currentProduct.id, payload).subscribe({
+        next: () => {
+          console.log('✅ Producto actualizado en backend');
+          this.loadProducts(); // recargar lista desde BD
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Error al actualizar producto', err);
+          alert('Error al actualizar el producto');
+        }
+      });
     } else {
       // Agregar nuevo producto
-      this.products.push({ ...this.currentProduct });
+      this.productsService.createProduct(payload).subscribe({
+        next: () => {
+          console.log('✅ Producto creado en backend');
+          this.loadProducts(); // recargar lista desde BD
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Error al crear producto', err);
+          alert('Error al crear el producto');
+        }
+      });
     }
-
-    this.saveToStorage();
-    this.sortedProducts = [...this.products];
-    this.applySort();
-    this.closeModal();
-    
-    console.log(this.editingProduct ? '✅ Producto actualizado' : '✅ Producto creado');
   }
 
   editProduct(product: Product) {
@@ -149,19 +180,23 @@ export class ProductsPage implements OnInit {
     }
 
     if (confirm('¿Estás seguro de eliminar este producto?')) {
-      this.products = this.products.filter(p => p.id !== id);
-      this.saveToStorage();
-      this.sortedProducts = [...this.products];
-      console.log('✅ Producto eliminado');
+      this.productsService.deleteProduct(id).subscribe({
+        next: () => {
+          console.log('✅ Producto eliminado en backend');
+          this.loadProducts();
+        },
+        error: (err) => {
+          console.error('Error al eliminar producto', err);
+          alert('Error al eliminar el producto');
+        }
+      });
     }
   }
 
   // ========== HELPERS ==========
-  getNextId(): number {
-    return this.products.length > 0
-      ? Math.max(...this.products.map(p => p.id)) + 1
-      : 1;
-  }
+
+  // ya no usamos getNextId() porque ahora el id lo asigna la BD
+  // pero si lo tenías en el HTML, podemos dejarlo sin usar o adaptarlo
 
   calculatePrice() {
     this.currentProduct.price = this.currentProduct.cost + this.currentProduct.margin;
@@ -174,6 +209,7 @@ export class ProductsPage implements OnInit {
   }
 
   // ========== ORDENAMIENTO ==========
+
   sortBy(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';

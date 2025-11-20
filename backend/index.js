@@ -12,7 +12,10 @@ const garzonesRoutes = require('./routes/garzones');
 app.use('/garzones', garzonesRoutes);
 
 const tablesRoutes = require('./routes/tables');  
-app.use('/tables', tablesRoutes);                 
+app.use('/tables', tablesRoutes);                
+
+const productsRoutes = require('./routes/products');
+app.use('/products', productsRoutes);
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en el puerto 3000');

@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TablesService, BackendTable } from 'src/app/services/tables.service';
+import { ProductsService, BackendProduct } from 'src/app/services/products.service';
+
 
 interface Product {
   id: number;
@@ -62,8 +64,10 @@ export class DashboardPage implements OnInit {
   tablesError: string | null = null;
 
   constructor(
-    private tablesService: TablesService
-  ) { }
+  private tablesService: TablesService,
+  private productsService: ProductsService
+) {}
+
 
   ngOnInit() {
     this.loadTables();
@@ -78,15 +82,25 @@ export class DashboardPage implements OnInit {
   // ========== CARGAR PRODUCTOS DEL SISTEMA ==========
 
   loadProducts() {
-    const stored = localStorage.getItem('products');
-    if (stored) {
-      this.availableProducts = JSON.parse(stored);
-      console.log('✅ Productos cargados:', this.availableProducts.length);
-    } else {
+  this.productsService.getProducts().subscribe({
+    next: (data: BackendProduct[]) => {
+      // Mapear producto del backend (DB) a tu interfaz MenuItem del front
+      this.availableProducts = data.map((item) => ({
+        id: item.id_producto,
+        name: item.nombre_producto,
+        price: item.precio_venta,
+        cost: item.costo_compra,
+        margin: item.margen_ganancia
+      }));
+
+      console.log('✅ Productos cargados desde backend:', this.availableProducts.length);
+    },
+    error: (err) => {
+      console.error('Error al cargar productos desde backend', err);
       this.availableProducts = [];
-      console.log('⚠️ No hay productos en el sistema');
     }
-  }
+  });
+}
 
   // ========== CARGAR MESAS DESDE BACKEND ==========
 
@@ -96,16 +110,15 @@ export class DashboardPage implements OnInit {
 
     this.tablesService.getTables().subscribe({
       next: (data: BackendTable[]) => {
-        // Mapear mesas del backend al modelo del dashboard
+
         this.tables = data.map((item) => ({
-          id: item.numero_mesa,              // usamos numero_mesa como id lógico
+          id: item.numero_mesa,             
           number: item.numero_mesa,
           capacity: item.capacidad,
           status: this.mapStatusFromBackend(item.disponibilidad),
           orders: []
         }));
 
-        // Ordenar por número
         this.tables.sort((a, b) => a.number - b.number);
 
         this.loadingTables = false;
@@ -119,7 +132,6 @@ export class DashboardPage implements OnInit {
     });
   }
 
-  // Mapea estado del backend ('disponible', 'ocupada', 'reservada') al front
   private mapStatusFromBackend(status: string): 'available' | 'occupied' | 'reserved' {
     switch (status) {
       case 'disponible':
@@ -136,7 +148,6 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  // Mapea estado del front al backend
   private mapStatusToBackend(status: 'available' | 'occupied' | 'reserved'): BackendTable['disponibilidad'] {
     switch (status) {
       case 'available':
@@ -148,13 +159,13 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  // Sincronizar solo lo básico (numero, capacidad, disponibilidad) con el backend
+
   private syncTableToBackend(table: Table) {
     const payload: BackendTable = {
       numero_mesa: table.number,
       capacidad: table.capacity,
       disponibilidad: this.mapStatusToBackend(table.status),
-      ubicacion: null // de momento no usamos ubicacion en el dashboard
+      ubicacion: null 
     };
 
     this.tablesService.updateTable(table.number, payload).subscribe({
