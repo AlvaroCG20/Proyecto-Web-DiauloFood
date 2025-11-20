@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { TablesService, BackendTable } from 'src/app/services/tables.service';
 
 interface Table {
-  id: number;
   number: number;
   capacity: number;
   status: 'available' | 'occupied' | 'reserved';
@@ -29,7 +29,6 @@ export class TablesManagementPage implements OnInit {
   editingTable: Table | null = null;
   
   currentTable: Table = {
-    id: 0,
     number: 1,
     capacity: 4,
     status: 'available'
@@ -37,14 +36,19 @@ export class TablesManagementPage implements OnInit {
 
   currentUser: any = {};
 
-  constructor(private router: Router) { }
+  loading = false;
+  errorMessage: string | null = null;
+
+  constructor(
+    private router: Router,
+    private tablesService: TablesService
+  ) { }
 
   ngOnInit() {
     this.loadCurrentUser();
     this.loadTables();
   }
 
-  // ← AGREGAR ESTO
   ionViewWillEnter() {
     this.loadTables(); // Recargar mesas cada vez que entras a la página
   }
@@ -62,32 +66,63 @@ export class TablesManagementPage implements OnInit {
     }
   }
 
+  // ========== CARGA DESDE BACKEND ==========
   loadTables() {
-    const stored = localStorage.getItem('tables');
-    if (stored) {
-      this.tables = JSON.parse(stored);
-    } else {
-      // Mesas iniciales por defecto
-      this.tables = [];
-      for (let i = 1; i <= 14; i++) {
-        this.tables.push({
-          id: i,
-          number: i,
-          capacity: 4,
-          status: 'available',
+    this.loading = true;
+    this.errorMessage = null;
+
+    this.tablesService.getTables().subscribe({
+      next: (data: BackendTable[]) => {
+        this.tables = data.map(item => ({
+          number: item.numero_mesa,
+          capacity: item.capacidad,
+          status: this.mapStatusFromBackend(item.disponibilidad),
           orders: []
-        });
+        }));
+
+        // Ordenar por número
+        this.tables.sort((a, b) => a.number - b.number);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar mesas', err);
+        this.errorMessage = 'Error al cargar las mesas';
+        this.loading = false;
       }
-      this.saveToStorage();
-    }
-    
-    // Ordenar por número
-    this.tables.sort((a, b) => a.number - b.number);
+    });
   }
 
-  saveToStorage() {
-    localStorage.setItem('tables', JSON.stringify(this.tables));
+  // Convierte el estado del backend (disponible/ocupada/reservada) a tu enum (available/occupied/reserved)
+  private mapStatusFromBackend(status: string): 'available' | 'occupied' | 'reserved' {
+    switch (status) {
+      case 'disponible':
+        return 'available';
+      case 'ocupada':
+        return 'occupied';
+      case 'reservada':
+        return 'reserved';
+      default:
+        if (status === 'available' || status === 'occupied' || status === 'reserved') {
+          return status;
+        }
+        return 'available';
+    }
   }
+
+  // Convierte tu estado del front al enum del backend
+  private mapStatusToBackend(
+  status: 'available' | 'occupied' | 'reserved'
+  ): 'disponible' | 'ocupada' | 'reservada' {
+  switch (status) {
+    case 'available':
+      return 'disponible';
+    case 'occupied':
+      return 'ocupada';
+    case 'reserved':
+      return 'reservada';
+  }
+}
+
 
   getStatusLabel(status: string): string {
     const labels: { [key: string]: string } = {
@@ -127,7 +162,6 @@ export class TablesManagementPage implements OnInit {
     } else {
       this.editingTable = null;
       this.currentTable = {
-        id: this.getNextId(),
         number: this.getNextTableNumber(),
         capacity: 4,
         status: 'available'
@@ -141,13 +175,14 @@ export class TablesManagementPage implements OnInit {
     this.editingTable = null;
   }
 
-  // ========== CRUD ==========
+  // ========== CRUD (usando backend) ==========
   saveTable() {
     if (!this.isFormValid()) return;
 
     // Verificar que no exista otra mesa con el mismo número
     const existingTable = this.tables.find(t => 
-      t.number === this.currentTable.number && t.id !== this.currentTable.id
+      t.number === this.currentTable.number &&
+      (!this.editingTable || t.number !== this.editingTable.number)
     );
 
     if (existingTable) {
@@ -155,56 +190,70 @@ export class TablesManagementPage implements OnInit {
       return;
     }
 
-    if (this.editingTable) {
-      // Actualizar existente
-      const index = this.tables.findIndex(t => t.id === this.currentTable.id);
-      if (index !== -1) {
-        // Preservar estado actual y datos de ocupación
-        this.tables[index] = {
-          ...this.tables[index],
-          number: this.currentTable.number
-        };
-      }
-    } else {
-      // Agregar nueva
-      this.tables.push({ ...this.currentTable });
-    }
+    const payload: BackendTable = {
+      numero_mesa: this.currentTable.number,
+      capacidad: this.currentTable.capacity,
+      disponibilidad: this.mapStatusToBackend(this.currentTable.status),
+      ubicacion: 'Salón principal' // TODO: luego puedes manejar esto en el formulario
+    };
 
-    this.saveToStorage();
-    this.loadTables(); // Recargar para ordenar
-    this.closeModal();
-    
-    console.log(this.editingTable ? '✅ Mesa actualizada' : '✅ Mesa creada');
+    if (this.editingTable) {
+      // UPDATE
+      this.tablesService.updateTable(this.editingTable.number, payload).subscribe({
+        next: () => {
+          console.log('✅ Mesa actualizada');
+          this.loadTables();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Error al actualizar mesa', err);
+          alert('Error al actualizar la mesa');
+        }
+      });
+    } else {
+      // CREATE
+      this.tablesService.createTable(payload).subscribe({
+        next: () => {
+          console.log('✅ Mesa creada');
+          this.loadTables();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Error al crear mesa', err);
+          alert('Error al crear la mesa');
+        }
+      });
+    }
   }
 
   editTable(table: Table) {
     this.openTableModal(table);
   }
 
-  deleteTable(id: number) {
-    const table = this.tables.find(t => t.id === id);
+  deleteTable(number: number) {
+    const table = this.tables.find(t => t.number === number);
     if (!table) return;
 
-    // No permitir eliminar mesas ocupadas o reservadas
     if (table.status !== 'available') {
       alert('No puedes eliminar una mesa ocupada o reservada.\nCierra la mesa desde el Dashboard primero.');
       return;
     }
 
     if (confirm(`¿Estás seguro de eliminar la Mesa ${table.number}?\n\nEsta acción no se puede deshacer.`)) {
-      this.tables = this.tables.filter(t => t.id !== id);
-      this.saveToStorage();
-      console.log('✅ Mesa eliminada');
+      this.tablesService.deleteTable(number).subscribe({
+        next: () => {
+          console.log('✅ Mesa eliminada');
+          this.loadTables();
+        },
+        error: (err) => {
+          console.error('Error al eliminar mesa', err);
+          alert('Error al eliminar la mesa');
+        }
+      });
     }
   }
 
   // ========== HELPERS ==========
-  getNextId(): number {
-    return this.tables.length > 0
-      ? Math.max(...this.tables.map(t => t.id)) + 1
-      : 1;
-  }
-
   getNextTableNumber(): number {
     return this.tables.length > 0
       ? Math.max(...this.tables.map(t => t.number)) + 1
@@ -212,7 +261,7 @@ export class TablesManagementPage implements OnInit {
   }
 
   isFormValid(): boolean {
-    return this.currentTable.number > 0;
+    return this.currentTable.number > 0 && this.currentTable.capacity > 0;
   }
 
 }

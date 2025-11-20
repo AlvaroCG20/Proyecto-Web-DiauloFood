@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { TablesService, BackendTable } from 'src/app/services/tables.service';
 
 interface Product {
   id: number;
@@ -16,7 +17,7 @@ interface MenuItem {
 }
 
 interface Table {
-  id: number;
+  id: number; // alias de number, solo para el front
   number: number;
   capacity: number;
   status: 'available' | 'occupied' | 'reserved';
@@ -57,7 +58,12 @@ export class DashboardPage implements OnInit {
     orders: []
   };
 
-  constructor() { }
+  loadingTables = false;
+  tablesError: string | null = null;
+
+  constructor(
+    private tablesService: TablesService
+  ) { }
 
   ngOnInit() {
     this.loadTables();
@@ -70,6 +76,7 @@ export class DashboardPage implements OnInit {
   }
 
   // ========== CARGAR PRODUCTOS DEL SISTEMA ==========
+
   loadProducts() {
     const stored = localStorage.getItem('products');
     if (stored) {
@@ -81,7 +88,87 @@ export class DashboardPage implements OnInit {
     }
   }
 
+  // ========== CARGAR MESAS DESDE BACKEND ==========
+
+  loadTables() {
+    this.loadingTables = true;
+    this.tablesError = null;
+
+    this.tablesService.getTables().subscribe({
+      next: (data: BackendTable[]) => {
+        // Mapear mesas del backend al modelo del dashboard
+        this.tables = data.map((item) => ({
+          id: item.numero_mesa,              // usamos numero_mesa como id lógico
+          number: item.numero_mesa,
+          capacity: item.capacidad,
+          status: this.mapStatusFromBackend(item.disponibilidad),
+          orders: []
+        }));
+
+        // Ordenar por número
+        this.tables.sort((a, b) => a.number - b.number);
+
+        this.loadingTables = false;
+        console.log('✅ Mesas cargadas desde backend:', this.tables);
+      },
+      error: (err) => {
+        console.error('Error al cargar mesas en Dashboard', err);
+        this.tablesError = 'Error al cargar las mesas';
+        this.loadingTables = false;
+      }
+    });
+  }
+
+  // Mapea estado del backend ('disponible', 'ocupada', 'reservada') al front
+  private mapStatusFromBackend(status: string): 'available' | 'occupied' | 'reserved' {
+    switch (status) {
+      case 'disponible':
+        return 'available';
+      case 'ocupada':
+        return 'occupied';
+      case 'reservada':
+        return 'reserved';
+      default:
+        if (status === 'available' || status === 'occupied' || status === 'reserved') {
+          return status;
+        }
+        return 'available';
+    }
+  }
+
+  // Mapea estado del front al backend
+  private mapStatusToBackend(status: 'available' | 'occupied' | 'reserved'): BackendTable['disponibilidad'] {
+    switch (status) {
+      case 'available':
+        return 'disponible';
+      case 'occupied':
+        return 'ocupada';
+      case 'reserved':
+        return 'reservada';
+    }
+  }
+
+  // Sincronizar solo lo básico (numero, capacidad, disponibilidad) con el backend
+  private syncTableToBackend(table: Table) {
+    const payload: BackendTable = {
+      numero_mesa: table.number,
+      capacidad: table.capacity,
+      disponibilidad: this.mapStatusToBackend(table.status),
+      ubicacion: null // de momento no usamos ubicacion en el dashboard
+    };
+
+    this.tablesService.updateTable(table.number, payload).subscribe({
+      next: () => {
+        console.log('✅ Mesa sincronizada con backend:', payload);
+      },
+      error: (err) => {
+        console.error('Error al sincronizar mesa con backend', err);
+      }
+    });
+  }
+
   // ========== BÚSQUEDA EN TIEMPO REAL ==========
+
   onSearchChange() {
     if (this.searchProduct.trim().length === 0) {
       this.filteredProducts = [];
@@ -98,6 +185,7 @@ export class DashboardPage implements OnInit {
   }
 
   // ========== SELECCIONAR PRODUCTO DE SUGERENCIAS ==========
+
   selectProduct(product: MenuItem) {
     const existingProduct = this.selectedTable.orders?.find(
       p => p.id === product.id
@@ -126,6 +214,7 @@ export class DashboardPage implements OnInit {
   }
 
   // ========== AGREGAR PRODUCTO MANUALMENTE ==========
+
   addProduct() {
     if (!this.searchProduct.trim()) {
       return;
@@ -144,12 +233,15 @@ export class DashboardPage implements OnInit {
     this.selectProduct(foundProduct);
   }
 
-  // ========== HELPER PARA GUARDAR CAMBIOS ==========
+  // ========== HELPER PARA GUARDAR CAMBIOS EN LA MESA SELECCIONADA ==========
+
   saveTableChanges() {
     const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
     if (index !== -1) {
       this.tables[index] = { ...this.selectedTable };
-      this.saveTables();
+      // Por ahora no persistimos productos/otros datos en backend,
+      // solo los tenemos en memoria y usamos el historial en localStorage.
+      console.log('✅ Cambios guardados en mesa (solo front):', this.selectedTable);
     }
   }
 
@@ -162,29 +254,7 @@ export class DashboardPage implements OnInit {
     return false;
   }
 
-  loadTables() {
-    const stored = localStorage.getItem('tables');
-    if (stored) {
-      this.tables = JSON.parse(stored);
-      this.tables.sort((a, b) => a.number - b.number);
-    } else {
-      this.tables = [];
-      for (let i = 1; i <= 14; i++) {
-        this.tables.push({
-          id: i,
-          number: i,
-          capacity: 4,
-          status: 'available',
-          orders: []
-        });
-      }
-      this.saveTables();
-    }
-  }
-
-  saveTables() {
-    localStorage.setItem('tables', JSON.stringify(this.tables));
-  }
+  // ========== STATUS Y UTILIDADES DE MESAS ==========
 
   getTableByNumber(number: number): Table | undefined {
     return this.tables.find(t => t.number === number);
@@ -209,6 +279,8 @@ export class DashboardPage implements OnInit {
     };
     return statusMap[status] || 'green';
   }
+
+  // ========== MODAL MESA ==========
 
   openTableModal(tableNumber: number) {
     const table = this.getTableByNumber(tableNumber);
@@ -235,17 +307,23 @@ export class DashboardPage implements OnInit {
     this.showSuggestions = false;
   }
 
+  // ========== PERSONAS ==========
+
   incrementPersons() {
     if (this.selectedTable.partySize && this.selectedTable.partySize < 20) {
       this.selectedTable.partySize++;
+      this.saveTableChanges();
     }
   }
 
   decrementPersons() {
     if (this.selectedTable.partySize && this.selectedTable.partySize > 1) {
       this.selectedTable.partySize--;
+      this.saveTableChanges();
     }
   }
+
+  // ========== CAMBIOS DE ESTADO (OCUPAR, RESERVAR, ETC.) ==========
 
   assignTable() {
     console.log('Ocupando mesa:', this.selectedTable);
@@ -256,11 +334,11 @@ export class DashboardPage implements OnInit {
     const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
     if (index !== -1) {
       this.tables[index] = { ...this.selectedTable };
-      this.saveTables();
+      this.syncTableToBackend(this.selectedTable);
     }
     
     this.closeModal();
-    console.log('✅ Mesa ocupada - Guardada en localStorage');
+    console.log('✅ Mesa ocupada - Sincronizada con backend');
   }
 
   reserveTable() {
@@ -272,11 +350,11 @@ export class DashboardPage implements OnInit {
     const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
     if (index !== -1) {
       this.tables[index] = { ...this.selectedTable };
-      this.saveTables();
+      this.syncTableToBackend(this.selectedTable);
     }
     
     this.closeModal();
-    console.log('✅ Mesa reservada - Guardada en localStorage');
+    console.log('✅ Mesa reservada - Sincronizada con backend');
   }
 
   activateTable() {
@@ -288,11 +366,11 @@ export class DashboardPage implements OnInit {
     const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
     if (index !== -1) {
       this.tables[index] = { ...this.selectedTable };
-      this.saveTables();
+      this.syncTableToBackend(this.selectedTable);
     }
     
     this.closeModal();
-    console.log('✅ Reserva confirmada - Mesa ocupada');
+    console.log('✅ Reserva confirmada - Mesa ocupada (backend actualizado)');
   }
 
   cancelReservation() {
@@ -308,12 +386,14 @@ export class DashboardPage implements OnInit {
     const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
     if (index !== -1) {
       this.tables[index] = { ...this.selectedTable };
-      this.saveTables();
+      this.syncTableToBackend(this.selectedTable);
     }
     
     this.closeModal();
-    console.log('✅ Reserva cancelada');
+    console.log('✅ Reserva cancelada - Backend actualizado');
   }
+
+  // ========== PRODUCTOS EN LA MESA ==========
 
   incrementProduct(product: Product) {
     product.quantity++;
@@ -338,13 +418,15 @@ export class DashboardPage implements OnInit {
     ) || 0;
   }
 
+  // ========== CERRAR MESA ==========
+
   closeTable() {
     console.log('Cerrando mesa:', this.selectedTable);
     
     const total = this.calculateTotal();
     console.log('Total de la cuenta: $', total);
     
-    // ========== GUARDAR EN HISTORIAL ==========
+    // ========== GUARDAR EN HISTORIAL (localStorage) ==========
     if (this.selectedTable.orders && this.selectedTable.orders.length > 0) {
       const orderHistory = {
         id: Date.now(),
@@ -360,14 +442,9 @@ export class DashboardPage implements OnInit {
         comments: this.selectedTable.comments || ''
       };
       
-      // Obtener historial existente
       const storedHistory = localStorage.getItem('orderHistory');
       let history = storedHistory ? JSON.parse(storedHistory) : [];
-      
-      // Agregar nueva orden
       history.push(orderHistory);
-      
-      // Guardar en localStorage
       localStorage.setItem('orderHistory', JSON.stringify(history));
       
       console.log('✅ Orden guardada en historial:', orderHistory);
@@ -382,15 +459,14 @@ export class DashboardPage implements OnInit {
     this.selectedTable.orders = [];
     this.selectedTable.partySize = 1;
     
-    // Actualizar en localStorage
     const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
     if (index !== -1) {
       this.tables[index] = { ...this.selectedTable };
-      this.saveTables();
+      this.syncTableToBackend(this.selectedTable);
     }
     
     this.closeModal();
-    console.log('✅ Mesa cerrada - Disponible nuevamente');
+    console.log('✅ Mesa cerrada - Disponible nuevamente (backend actualizado)');
   }
 
 }
