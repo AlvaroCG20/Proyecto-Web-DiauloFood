@@ -148,35 +148,43 @@ export class DashboardPage implements OnInit {
     }
   }
 
-  private mapStatusToBackend(status: 'available' | 'occupied' | 'reserved'): BackendTable['disponibilidad'] {
-    switch (status) {
-      case 'available':
-        return 'disponible';
-      case 'occupied':
-        return 'ocupada';
-      case 'reserved':
-        return 'reservada';
-    }
+  private mapStatusToBackend(
+  status: 'available' | 'occupied' | 'reserved'
+): BackendTable['disponibilidad'] {
+  switch (status) {
+    case 'available':
+      return 'disponible';
+    case 'occupied':
+      return 'ocupada';
+    case 'reserved':
+      return 'reservada';
+    default:
+      return 'disponible'; // fallback por si acaso
   }
+}
+
 
 
   private syncTableToBackend(table: Table) {
-    const payload: BackendTable = {
-      numero_mesa: table.number,
-      capacidad: table.capacity,
-      disponibilidad: this.mapStatusToBackend(table.status),
-      ubicacion: null 
-    };
+  const payload: Partial<BackendTable> = {
+    numero_mesa: table.number,
+    capacidad: table.capacity,
+    disponibilidad: this.mapStatusToBackend(table.status),
+    ubicacion: null
+  };
 
-    this.tablesService.updateTable(table.number, payload).subscribe({
-      next: () => {
-        console.log('✅ Mesa sincronizada con backend:', payload);
-      },
-      error: (err) => {
-        console.error('Error al sincronizar mesa con backend', err);
-      }
-    });
-  }
+  console.log('➡️ Enviando a PUT /tables:', payload);
+
+  this.tablesService.updateTable(table.number, payload).subscribe({
+    next: () => {
+      console.log('✅ Mesa sincronizada con backend:', payload);
+    },
+    error: (err) => {
+      console.error('Error al sincronizar mesa con backend', err);
+    }
+  });
+}
+
 
   // ========== BÚSQUEDA EN TIEMPO REAL ==========
 
@@ -337,20 +345,21 @@ export class DashboardPage implements OnInit {
   // ========== CAMBIOS DE ESTADO (OCUPAR, RESERVAR, ETC.) ==========
 
   assignTable() {
-    console.log('Ocupando mesa:', this.selectedTable);
-    
-    this.selectedTable.status = 'occupied';
-    this.selectedTable.startTime = new Date().toLocaleString('es-CL');
-    
-    const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
-    if (index !== -1) {
-      this.tables[index] = { ...this.selectedTable };
-      this.syncTableToBackend(this.selectedTable);
-    }
-    
-    this.closeModal();
-    console.log('✅ Mesa ocupada - Sincronizada con backend');
+  console.log('Ocupando mesa:', this.selectedTable);
+  
+  this.selectedTable.status = 'occupied';
+  this.selectedTable.startTime = new Date().toLocaleString('es-CL');
+  
+  const index = this.tables.findIndex(t => t.id === this.selectedTable.id);
+  if (index !== -1) {
+    this.tables[index] = { ...this.selectedTable };
+    this.syncTableToBackend(this.selectedTable); // 👈 aquí se manda 'ocupada'
   }
+  
+  this.closeModal();
+  console.log('✅ Mesa ocupada - Sincronizada con backend');
+}
+
 
   reserveTable() {
     console.log('Reservando mesa:', this.selectedTable);

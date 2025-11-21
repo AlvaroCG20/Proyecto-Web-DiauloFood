@@ -4,7 +4,14 @@ const conexion = require('../database/conexion.js');
 
 // GET /tables
 router.get('/', (req, res) => {
-  const sql = 'SELECT numero_mesa, capacidad, estado_mesa, ubicacion FROM mesas';
+  const sql = `
+    SELECT 
+      numero_mesa,
+      capacidad,
+      estado_mesa AS disponibilidad,
+      ubicacion
+    FROM mesas
+  `;
 
   conexion.query(sql, (err, results) => {
     if (err) {
@@ -19,51 +26,68 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   console.log('Body recibido en POST /tables:', req.body);
 
-  let { numero_mesa, capacidad, estado_mesa, ubicacion } = req.body;
+  let { numero_mesa, capacidad, disponibilidad, ubicacion } = req.body;
 
-  // ✅ solo exigimos numero_mesa
   if (numero_mesa == null) {
     return res.status(400).json({ error: 'Falta el número de mesa' });
   }
 
-  // ✅ defaults si no vienen
   if (capacidad == null) capacidad = 4;
-  if (!estado_mesa) estado_mesa = 'disponible';   // coincide con el ENUM
-  if (ubicacion === undefined) ubicacion = null;        // puede ser null
+  if (!disponibilidad) disponibilidad = 'disponible'; // ENUM válido
+  if (ubicacion === undefined) ubicacion = null;
 
   const sql = `
     INSERT INTO mesas (numero_mesa, capacidad, estado_mesa, ubicacion)
     VALUES (?, ?, ?, ?)
   `;
 
-  conexion.query(sql, [numero_mesa, capacidad, estado_mesa, ubicacion], (err) => {
-    if (err) {
-      console.error('Error al crear mesa:', err);
-      return res.status(500).json({ error: 'Error al crear mesa' });
+  conexion.query(
+    sql,
+    [numero_mesa, capacidad, disponibilidad, ubicacion],
+    (err) => {
+      if (err) {
+        console.error('Error al crear mesa:', err);
+        return res.status(500).json({ error: 'Error al crear mesa' });
+      }
+
+      res.status(201).json({
+        numero_mesa,
+        capacidad,
+        disponibilidad,
+        ubicacion
+      });
     }
-
-    res.status(201).json({
-      numero_mesa,
-      capacidad,
-      estado_mesa,
-      ubicacion
-    });
-  });
+  );
 });
-
 
 // PUT /tables/:numero_mesa
 router.put('/:numero_mesa', (req, res) => {
-  const { numero_mesa } = req.params;
-  const { capacidad, estado_mesa, ubicacion } = req.body;
+  const numero_mesa = req.params.numero_mesa;
+
+  // 👇 El front envía "disponibilidad", así que lo tomamos
+  let { capacidad, disponibilidad, ubicacion } = req.body;
+
+  console.log('PUT /tables body =>', req.body);
+
+  // Si el front no manda disponibilidad, no forzamos NULL:
+  if (disponibilidad === undefined) disponibilidad = null;
+  if (capacidad === undefined) capacidad = null;
+  if (ubicacion === undefined) ubicacion = null;
 
   const sql = `
     UPDATE mesas
-    SET capacidad = ?, estado_mesa = ?, ubicacion = ?
+    SET 
+      capacidad = ?,
+      estado_mesa = ?,       -- 👈 Guardamos disponibilidad aquí
+      ubicacion = ?
     WHERE numero_mesa = ?
   `;
 
-  conexion.query(sql, [capacidad, estado_mesa, ubicacion, numero_mesa], (err, result) => {
+  const params = [capacidad, disponibilidad, ubicacion, numero_mesa];
+
+  console.log('SQL params =>', params);
+
+  conexion.query(sql, params, (err, result) => {
     if (err) {
       console.error('Error al actualizar mesa:', err);
       return res.status(500).json({ error: 'Error al actualizar mesa' });
@@ -76,7 +100,7 @@ router.put('/:numero_mesa', (req, res) => {
     res.status(200).json({
       numero_mesa,
       capacidad,
-      estado_mesa,
+      disponibilidad,
       ubicacion
     });
   });
