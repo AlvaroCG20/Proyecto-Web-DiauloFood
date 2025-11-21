@@ -1,0 +1,177 @@
+<ion-content>
+  <app-header-restaurant></app-header-restaurant>
+
+  <div class="products-container">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <ion-button fill="clear" class="btn-back" routerLink="/admin">
+        <ion-icon slot="start" name="arrow-back"></ion-icon>
+        Volver
+      </ion-button>
+      
+      <h1 class="page-title">Gestión de Productos</h1>
+      
+      <!-- BOTÓN SOLO PARA ADMIN -->
+      <ion-button 
+        class="btn-add" 
+        (click)="openProductModal()"
+        *ngIf="isAdmin()">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Agregar Producto
+      </ion-button>
+    </div>
+
+    <!-- Ordenamiento -->
+    <div class="sort-section">
+      <span class="sort-label">Ordenar por:</span>
+      <select [(ngModel)]="sortColumn" (ngModelChange)="applySort()" class="sort-select">
+        <option value="id">ID</option>
+        <option value="name">Nombre</option>
+        <option value="price">Precio</option>
+        <!-- Opciones solo para admin -->
+        <option value="cost" *ngIf="isAdmin()">Costo</option>
+        <option value="margin" *ngIf="isAdmin()">Margen</option>
+      </select>
+      <ion-button fill="clear" (click)="toggleSort()" class="btn-sort">
+        <ion-icon 
+          [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
+          slot="icon-only">
+        </ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Tabla de Productos -->
+    <div class="products-table">
+      <table>
+        <thead>
+          <tr>
+            <th (click)="sortBy('id')">ID</th>
+            <th (click)="sortBy('name')">Nombre</th>
+            <!-- Columnas solo para admin -->
+            <th (click)="sortBy('cost')" *ngIf="isAdmin()">Costo</th>
+            <th (click)="sortBy('margin')" *ngIf="isAdmin()">Margen</th>
+            <th (click)="sortBy('price')">Precio</th>
+            <!-- Acciones solo para admin -->
+            <th *ngIf="isAdmin()">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of sortedProducts">
+            <td>{{ product.id }}</td>
+            <td class="product-name">{{ product.name }}</td>
+            <!-- Columnas solo para admin -->
+            <td *ngIf="isAdmin()">${{ product.cost | number:'1.0-0' }}</td>
+            <td *ngIf="isAdmin()">${{ product.margin | number:'1.0-0' }}</td>
+            <td class="price-cell">${{ product.price | number:'1.0-0' }}</td>
+            <!-- Acciones solo para admin -->
+            <td class="actions" *ngIf="isAdmin()">
+              <ion-button fill="clear" size="small" (click)="editProduct(product)">
+                <ion-icon slot="icon-only" name="create-outline" color="primary"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" (click)="deleteProduct(product.id)">
+                <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+              </ion-button>
+            </td>
+          </tr>
+          
+          <tr *ngIf="sortedProducts.length === 0">
+            <td [attr.colspan]="isAdmin() ? 6 : 3" class="no-products">
+              No hay productos registrados
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mensaje informativo para garzones -->
+    <div class="info-message" *ngIf="!isAdmin()">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <p>Vista de solo lectura. Solo puedes consultar productos y precios.</p>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE PRODUCTO (SOLO ADMIN) -->
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="closeModal()" *ngIf="isAdmin()">
+    <ng-template>
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h2 class="modal-title">
+            {{ editingProduct ? 'Editar Producto' : 'Nuevo Producto' }}
+          </h2>
+          <ion-button fill="clear" class="btn-close" (click)="closeModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- Nombre -->
+          <div class="form-row">
+            <label class="form-label">Nombre del Producto *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="currentProduct.name" 
+              class="form-input" 
+              placeholder="Ej: Hamburguesa Clásica">
+          </div>
+
+          <!-- Costo -->
+          <div class="form-row">
+            <label class="form-label">Costo *</label>
+            <input 
+              type="number" 
+              [(ngModel)]="currentProduct.cost" 
+              (ngModelChange)="calculatePrice()"
+              class="form-input" 
+              placeholder="0">
+          </div>
+
+          <!-- Margen -->
+          <div class="form-row">
+            <label class="form-label">Margen de Ganancia *</label>
+            <input 
+              type="number" 
+              [(ngModel)]="currentProduct.margin" 
+              (ngModelChange)="calculatePrice()"
+              class="form-input" 
+              placeholder="0">
+          </div>
+
+          <!-- Precio (calculado automáticamente) -->
+          <div class="form-row">
+            <label class="form-label">Precio de Venta</label>
+            <div class="price-display">
+              ${{ currentProduct.price | number:'1.0-0' }}
+            </div>
+            <span class="price-info">Calculado automáticamente (Costo + Margen)</span>
+          </div>
+
+          <!-- Botones -->
+          <div class="modal-actions">
+            <ion-button 
+              expand="block" 
+              class="btn-save" 
+              (click)="saveProduct()"
+              [disabled]="!isFormValid()">
+              {{ editingProduct ? 'Actualizar' : 'Crear' }} Producto
+            </ion-button>
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              class="btn-cancel" 
+              (click)="closeModal()">
+              Cancelar
+            </ion-button>
+          </div>
+
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <app-footer-dashboard></app-footer-dashboard>
+</ion-content>

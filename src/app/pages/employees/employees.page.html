@@ -1,0 +1,139 @@
+<ion-content>
+  <app-header-restaurant></app-header-restaurant>
+  
+  <div class="employees-container">
+    
+    <!-- Header con botones -->
+    <div class="page-header">
+      <ion-button fill="clear" class="btn-back" routerLink="/admin">
+        <ion-icon slot="start" name="arrow-back"></ion-icon>
+        Volver
+      </ion-button>
+      
+      <h1 class="page-title">Gestión de Garzones</h1>
+      
+      <ion-button class="btn-new-employee" (click)="openEmployeeModal()">
+        <ion-icon slot="start" name="person-add"></ion-icon>
+        Nuevo Garzón
+      </ion-button>
+    </div>
+
+    <!-- Tabla de garzones -->
+    <div class="employees-table">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Mesas Asignadas</th>
+            <th>Fecha Ingreso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let employee of garzones">
+            <td>{{ employee.id }}</td>
+            <td>
+              <div class="employee-cell">
+                <img [src]="employee.avatar" [alt]="employee.name" class="mini-avatar">
+                <span>{{ employee.name }}</span>
+              </div>
+            </td>
+            <td>{{ employee.email }}</td>
+            <td>{{ employee.assignedTables || 'Sin asignar' }}</td>
+            <td>{{ employee.joinDate }}</td>
+            <td class="actions">
+              <ion-button fill="clear" size="small" (click)="editEmployee(employee)">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" color="danger" (click)="deleteEmployee(employee.id)">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </td>
+          </tr>
+          
+          <!-- Mensaje si no hay garzones -->
+          <tr *ngIf="garzones.length === 0">
+            <td colspan="6" class="no-employees">
+              No hay garzones registrados. Agrega uno nuevo.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- MODAL PARA AÑADIR/EDITAR GARZÓN -->
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="closeModal()">
+    <ng-template>
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h2 class="modal-title">{{ editingEmployee !== null ? 'Editar' : 'Nuevo' }} Garzón</h2>
+          <ion-button fill="clear" class="btn-close-modal" (click)="closeModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- Nombre -->
+          <div class="form-row">
+            <label class="form-label">Nombre completo *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="currentEmployee.name" 
+              class="form-input" 
+              placeholder="Ej: Juan Pérez">
+          </div>
+
+          <!-- Email -->
+          <div class="form-row">
+            <label class="form-label">Email *</label>
+            <input 
+              type="email" 
+              [(ngModel)]="currentEmployee.email" 
+              class="form-input" 
+              placeholder="juan.perez@diablofood.com">
+          </div>
+
+          <!-- Contraseña (solo al crear) -->
+          <div class="form-row" *ngIf="editingEmployee === null">
+            <label class="form-label">Contraseña *</label>
+            <input 
+              type="password" 
+              [(ngModel)]="currentEmployee.password" 
+              class="form-input" 
+              placeholder="Mínimo 6 caracteres">
+          </div>
+
+          <!-- Mesas asignadas (SOLO AL EDITAR) -->
+          <div class="form-row" *ngIf="editingEmployee !== null">
+            <label class="form-label">Mesas asignadas</label>
+            <input 
+              type="text" 
+              [(ngModel)]="currentEmployee.assignedTables" 
+              class="form-input" 
+              placeholder="Ej: 1, 2, 3, 4">
+            <small class="form-hint">Separadas por comas. Puedes modificarlas aquí.</small>
+          </div>
+
+          <!-- Botón Guardar -->
+          <ion-button 
+            expand="block" 
+            class="btn-save" 
+            (click)="saveEmployee()"
+            [disabled]="!isFormValid()">
+            {{ editingEmployee !== null ? 'Actualizar' : 'Crear' }} Garzón
+          </ion-button>
+
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+  
+  <app-footer-dashboard></app-footer-dashboard>
+</ion-content>

@@ -1,0 +1,211 @@
+<ion-content>
+  <app-header-restaurant></app-header-restaurant>
+  
+  <!-- Contenido del Dashboard -->
+  <div class="dashboard-container">
+    
+    <!-- Header con título y filtros -->
+    <div class="page-header">
+      <h1 class="page-title">Restaurante</h1>
+      <div class="header-actions">
+        <!-- BOTÓN ADMIN -->
+        <ion-button 
+          fill="solid" 
+          color="warning" 
+          routerLink="/admin"
+          class="btn-admin"
+          *ngIf="isAdmin()">
+          <ion-icon slot="start" name="settings-outline"></ion-icon>
+          Admin
+        </ion-button>
+        
+        <span class="tables-count">{{ tables.length }} {{ tables.length === 1 ? 'Mesa' : 'Mesas' }}</span>
+        <ion-icon name="options-outline" class="filter-icon"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Grid de Mesas Dinámico -->
+    <div class="tables-grid-dynamic">
+      <div 
+        class="table-card" 
+        *ngFor="let table of tables"
+        [ngClass]="getTableStatusByTable(table)" 
+        (click)="openTableModalByTable(table)">
+        <span class="table-number">{{ table.number }}</span>
+      </div>
+
+      <!-- Mensaje si no hay mesas -->
+      <div class="no-tables-message" *ngIf="tables.length === 0">
+        <ion-icon name="restaurant-outline"></ion-icon>
+        <h3>No hay mesas disponibles</h3>
+        <p>Ve a <strong>Gestión de Mesas</strong> para crear nuevas mesas</p>
+      </div>
+    </div>
+
+  </div>
+  
+  <!-- MODAL DE MESA -->
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="closeModal()">
+    <ng-template>
+      <div class="modal-content">
+        
+        <!-- Header del Modal -->
+        <div class="modal-header" [ngClass]="getTableStatusByTable(selectedTable)">
+          <h2 class="modal-title">Mesa {{ selectedTable?.number }}</h2>
+          <ion-button fill="clear" class="btn-close" (click)="closeModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- CONTENIDO SEGÚN ESTADO -->
+        <div class="modal-body">
+          
+          <!-- ========== MESA DISPONIBLE (VERDE) ========== -->
+          <div *ngIf="selectedTable?.status === 'available'">
+            <h3 class="section-title">Asignar Mesa</h3>
+            
+            <!-- Personas -->
+            <div class="form-row">
+              <label class="form-label">Personas *</label>
+              <div class="counter-controls">
+                <ion-button fill="clear" (click)="decrementPersons()">
+                  <ion-icon slot="icon-only" name="remove"></ion-icon>
+                </ion-button>
+                <input type="number" [(ngModel)]="selectedTable.partySize" class="counter-input" readonly>
+                <ion-button fill="clear" (click)="incrementPersons()">
+                  <ion-icon slot="icon-only" name="add"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- Cliente -->
+            <div class="form-row">
+              <label class="form-label">Cliente</label>
+              <input type="text" [(ngModel)]="selectedTable.customerName" class="form-input" placeholder="Nombre del cliente">
+            </div>
+
+            <!-- Garzón -->
+            <div class="form-row">
+              <label class="form-label">Garzón</label>
+              <input type="text" [(ngModel)]="selectedTable.waiter" class="form-input" placeholder="Nombre del garzón">
+            </div>
+
+            <!-- Comentarios -->
+            <div class="form-row">
+              <label class="form-label">Comentarios</label>
+              <textarea [(ngModel)]="selectedTable.comments" class="form-textarea" rows="3" placeholder="Comentarios adicionales"></textarea>
+            </div>
+
+            <!-- Botones -->
+            <ion-button expand="block" class="btn-action green-btn" (click)="assignTable()">
+              Ocupar Mesa
+            </ion-button>
+            <ion-button expand="block" fill="outline" class="btn-secondary" (click)="reserveTable()">
+              Reservar Mesa
+            </ion-button>
+          </div>
+
+          <!-- ========== MESA RESERVADA (AMARILLO) ========== -->
+          <div *ngIf="selectedTable?.status === 'reserved'">
+            <h3 class="section-title">Reserva</h3>
+            
+            <!-- Info de reserva -->
+            <div class="info-card">
+              <p><strong>Cliente:</strong> {{ selectedTable.customerName || 'Sin cliente' }}</p>
+              <p><strong>Personas:</strong> {{ selectedTable.partySize }}</p>
+              <p><strong>Hora reserva:</strong> {{ selectedTable.reservationTime || 'No especificada' }}</p>
+              <p><strong>Garzón asignado:</strong> {{ selectedTable.waiter || 'Sin asignar' }}</p>
+            </div>
+
+            <!-- Comentarios -->
+            <div class="form-row">
+              <label class="form-label">Comentarios</label>
+              <textarea [(ngModel)]="selectedTable.comments" class="form-textarea" rows="3" placeholder="Comentarios de la reserva"></textarea>
+            </div>
+
+            <!-- Botones -->
+            <ion-button expand="block" class="btn-action yellow-btn" (click)="activateTable()">
+              Confirmar Reserva (Ocupar)
+            </ion-button>
+            <ion-button expand="block" fill="outline" class="btn-secondary" (click)="cancelReservation()">
+              Cancelar Reserva
+            </ion-button>
+          </div>
+
+          <!-- ========== MESA OCUPADA (ROJO) ========== -->
+          <div *ngIf="selectedTable?.status === 'occupied'">
+            
+            <!-- Info de la mesa -->
+            <div class="info-text">
+              {{ selectedTable.partySize }} Persona{{ selectedTable.partySize && selectedTable.partySize > 1 ? 's' : '' }}, 
+              {{ selectedTable.customerName || 'Sin nombre' }}, 
+              {{ selectedTable.startTime || '27/09/25 19:51:32' }}
+            </div>
+
+            <!-- Agregar Producto -->
+            <div class="add-product-section">
+              <h3 class="section-header red-header">Agregar Producto</h3>
+              
+              <div class="product-search-container">
+                <input 
+                  type="text" 
+                  [(ngModel)]="searchProduct" 
+                  (ngModelChange)="onSearchChange()"
+                  class="search-input" 
+                  placeholder="Buscar producto por nombre...">
+                
+                <!-- Dropdown de sugerencias -->
+                <div class="suggestions-dropdown" *ngIf="showSuggestions">
+                  <div 
+                    class="suggestion-item" 
+                    *ngFor="let product of filteredProducts"
+                    (click)="selectProduct(product)">
+                    <span class="suggestion-name">{{ product.name }}</span>
+                    <span class="suggestion-price">${{ product.price }}</span>
+                  </div>
+                </div>
+                
+                <!-- Mensaje si no hay productos -->
+                <div class="no-products-warning" *ngIf="availableProducts.length === 0">
+                  ⚠️ No hay productos en el sistema. Ve a <strong>Gestión de Productos</strong> para agregar.
+                </div>
+              </div>
+
+              <!-- Lista de productos agregados -->
+              <div class="products-list" *ngIf="selectedTable.orders && selectedTable.orders.length > 0">
+                <div class="product-item" *ngFor="let product of selectedTable.orders">
+                  <span class="product-name">{{ product.name }}</span>
+                  <div class="product-controls">
+                    <ion-button fill="clear" size="small" (click)="decrementProduct(product)">
+                      <ion-icon name="remove" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <span class="product-quantity">{{ product.quantity }}</span>
+                    <ion-button fill="clear" size="small" (click)="incrementProduct(product)">
+                      <ion-icon name="add" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                  <span class="product-price">${{ product.price * product.quantity }}</span>
+                </div>
+              </div>
+
+              <!-- Total -->
+              <div class="total-section" *ngIf="selectedTable.orders && selectedTable.orders.length > 0">
+                <strong>Total: ${{ calculateTotal() }}</strong>
+              </div>
+
+              <!-- Botón Cerrar Mesa -->
+              <ion-button expand="block" class="btn-close-table" (click)="closeTable()">
+                Cerrar mesa
+              </ion-button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+  
+  <app-footer-dashboard></app-footer-dashboard>
+</ion-content>

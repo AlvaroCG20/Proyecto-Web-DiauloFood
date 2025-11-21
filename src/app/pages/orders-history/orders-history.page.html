@@ -1,0 +1,250 @@
+<ion-content>
+  <app-header-restaurant></app-header-restaurant>
+  
+  <div class="history-container">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <ion-button fill="clear" class="btn-back" routerLink="/admin">
+        <ion-icon slot="start" name="arrow-back"></ion-icon>
+        Volver
+      </ion-button>
+      
+      <h1 class="page-title">Historial de Órdenes</h1>
+      
+      <div class="header-actions">
+        <ion-button class="btn-export" (click)="exportToCSV()" [disabled]="orders.length === 0">
+          <ion-icon slot="start" name="download-outline"></ion-icon>
+          Exportar CSV
+        </ion-button>
+        <ion-button class="btn-clear" color="danger" (click)="clearAllHistory()" [disabled]="orders.length === 0">
+          <ion-icon slot="start" name="trash-outline"></ion-icon>
+          Limpiar Todo
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <ion-icon name="receipt-outline" class="stat-icon"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.totalOrders }}</span>
+          <span class="stat-label">Órdenes Totales</span>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <ion-icon name="cash-outline" class="stat-icon green"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">${{ stats.totalRevenue | number:'1.0-0' }}</span>
+          <span class="stat-label">Ingreso Total</span>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <ion-icon name="trending-up-outline" class="stat-icon blue"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">${{ stats.averageTicket | number:'1.0-0' }}</span>
+          <span class="stat-label">Ticket Promedio</span>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <ion-icon name="today-outline" class="stat-icon orange"></ion-icon>
+        <div class="stat-info">
+          <span class="stat-value">${{ stats.todayRevenue | number:'1.0-0' }}</span>
+          <span class="stat-label">Ventas Hoy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+      <h3>Filtros</h3>
+      <div class="filters-grid">
+        <div class="filter-item">
+          <label>Fecha</label>
+          <input type="text" [(ngModel)]="filterDate" (ngModelChange)="applyFilters()" placeholder="dd/mm/yyyy" class="filter-input">
+        </div>
+        <div class="filter-item">
+          <label>Garzón</label>
+          <input type="text" [(ngModel)]="filterWaiter" (ngModelChange)="applyFilters()" placeholder="Nombre del garzón" class="filter-input">
+        </div>
+        <div class="filter-item">
+          <label>Mesa</label>
+          <input type="number" [(ngModel)]="filterTable" (ngModelChange)="applyFilters()" placeholder="Número" class="filter-input">
+        </div>
+        <div class="filter-item">
+          <ion-button expand="block" fill="outline" (click)="clearFilters()">
+            <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+            Limpiar Filtros
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Órdenes -->
+    <div class="orders-table">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Mesa</th>
+            <th>Cliente</th>
+            <th>Garzón</th>
+            <th>Personas</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of filteredOrders">
+            <td>#{{ order.id }}</td>
+            <td>{{ order.date }}</td>
+            <td>{{ order.closeTime.split(',')[1] || order.closeTime }}</td>
+            <td><span class="table-badge">Mesa {{ order.tableNumber }}</span></td>
+            <td>{{ order.customerName }}</td>
+            <td>{{ order.waiter }}</td>
+            <td>{{ order.partySize }}</td>
+            <td>{{ order.products.length }}</td>
+            <td class="total-cell">${{ order.total | number:'1.0-0' }}</td>
+            <td class="actions">
+              <ion-button fill="clear" size="small" (click)="openDetailModal(order)">
+                <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" color="danger" (click)="deleteOrder(order.id)">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </td>
+          </tr>
+          
+          <tr *ngIf="filteredOrders.length === 0">
+            <td colspan="10" class="no-orders">
+              {{ orders.length === 0 ? 'No hay órdenes en el historial' : 'No se encontraron órdenes con los filtros aplicados' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Top Products -->
+    <div class="analytics-section">
+      <div class="analytics-card">
+        <h3>🏆 Top 5 Productos Más Vendidos</h3>
+        <div class="top-list">
+          <div class="top-item" *ngFor="let item of getTopProducts(); let i = index">
+            <span class="rank">#{{ i + 1 }}</span>
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-quantity">{{ item.quantity }} vendidos</span>
+            <span class="item-revenue">${{ item.revenue | number:'1.0-0' }}</span>
+          </div>
+          <div class="no-data" *ngIf="getTopProducts().length === 0">
+            No hay datos disponibles
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-card">
+        <h3>👨‍🍳 Top 5 Garzones con Más Ventas</h3>
+        <div class="top-list">
+          <div class="top-item" *ngFor="let waiter of getTopWaiters(); let i = index">
+            <span class="rank">#{{ i + 1 }}</span>
+            <span class="item-name">{{ waiter.name }}</span>
+            <span class="item-quantity">{{ waiter.orders }} órdenes</span>
+            <span class="item-revenue">${{ waiter.revenue | number:'1.0-0' }}</span>
+          </div>
+          <div class="no-data" *ngIf="getTopWaiters().length === 0">
+            No hay datos disponibles
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE DETALLES -->
+  <ion-modal [isOpen]="isDetailModalOpen" (willDismiss)="closeDetailModal()">
+    <ng-template>
+      <div class="modal-content" *ngIf="selectedOrder">
+        
+        <div class="modal-header">
+          <h2 class="modal-title">Orden #{{ selectedOrder.id }}</h2>
+          <ion-button fill="clear" class="btn-close-modal" (click)="closeDetailModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- Información General -->
+          <div class="detail-section">
+            <h3>Información General</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Mesa:</span>
+                <span class="detail-value">{{ selectedOrder.tableNumber }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Cliente:</span>
+                <span class="detail-value">{{ selectedOrder.customerName }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Garzón:</span>
+                <span class="detail-value">{{ selectedOrder.waiter }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Personas:</span>
+                <span class="detail-value">{{ selectedOrder.partySize }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Fecha:</span>
+                <span class="detail-value">{{ selectedOrder.date }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Hora Apertura:</span>
+                <span class="detail-value">{{ selectedOrder.startTime }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Hora Cierre:</span>
+                <span class="detail-value">{{ selectedOrder.closeTime }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Productos -->
+          <div class="detail-section">
+            <h3>Productos Ordenados</h3>
+            <div class="products-detail-list">
+              <div class="product-detail-item" *ngFor="let product of selectedOrder.products">
+                <span class="product-detail-name">{{ product.name }}</span>
+                <span class="product-detail-quantity">x{{ product.quantity }}</span>
+                <span class="product-detail-price">${{ product.price | number:'1.0-0' }}</span>
+                <span class="product-detail-subtotal">${{ (product.price * product.quantity) | number:'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="detail-total">
+            <span class="total-label">TOTAL:</span>
+            <span class="total-value">${{ selectedOrder.total | number:'1.0-0' }}</span>
+          </div>
+
+          <!-- Comentarios -->
+          <div class="detail-section" *ngIf="selectedOrder.comments">
+            <h3>Comentarios</h3>
+            <p class="comments-text">{{ selectedOrder.comments }}</p>
+          </div>
+
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+  
+  <app-footer-dashboard></app-footer-dashboard>
+</ion-content>

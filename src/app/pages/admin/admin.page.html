@@ -1,0 +1,125 @@
+<ion-content>
+  <app-header-restaurant></app-header-restaurant>
+  
+  <div class="admin-container">
+    
+    <!-- PERFIL DEL USUARIO -->
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="avatar-container">
+          <img [src]="currentUser.avatar" [alt]="currentUser.name" class="avatar">
+          <div class="status-badge" [ngClass]="currentUser.status"></div>
+        </div>
+        <div class="profile-info">
+          <h2 class="user-name">{{ currentUser.name }}</h2>
+          <p class="user-role">{{ currentUser.role }}</p>
+          <p class="user-email">{{ currentUser.email }}</p>
+        </div>
+      </div>
+      
+      <!-- Botón para abrir selector de usuarios (SOLO PARA TESTING) -->
+      <ion-button expand="block" fill="outline" class="btn-change-user" (click)="openUserSelector()">
+        <ion-icon slot="start" name="people-outline"></ion-icon>
+        Cambiar Usuario (Testing)
+      </ion-button>
+    </div>
+
+    <!-- OPCIONES DE ADMINISTRACIÓN -->
+    <div class="options-section">
+      <h3 class="section-title">Panel de Administración</h3>
+      
+      <div class="options-grid">
+        
+        <!-- Gestión de Garzones -->
+        <div class="option-card" (click)="navigateTo('/employees')">
+          <ion-icon name="people-outline" class="option-icon"></ion-icon>
+          <h4 class="option-title">Gestión de Garzones</h4>
+          <p class="option-description">Administrar personal y asignación de mesas</p>
+        </div>
+
+        <!-- Gestión de Mesas -->
+        <div class="option-card" (click)="navigateTo('/tables-management')">
+          <ion-icon name="grid-outline" class="option-icon"></ion-icon>
+          <h4 class="option-title">Gestión de Mesas</h4>
+          <p class="option-description">Añadir, eliminar y configurar mesas</p>
+        </div>
+
+        <!-- Historial de Órdenes -->
+        <div class="option-card" (click)="navigateTo('/orders-history')">
+          <ion-icon name="time-outline" class="option-icon"></ion-icon>
+          <h4 class="option-title">Historial de Órdenes</h4>
+          <p class="option-description">Ver todas las órdenes completadas</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ESTADÍSTICAS DEL DÍA -->
+    <div class="info-cards">
+      <div class="info-card">
+        <h4>Resumen del Día</h4>
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ todayStats.tables }}</span>
+            <span class="stat-label">Mesas Activas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">${{ todayStats.sales.toLocaleString('es-CL') }}</span>
+            <span class="stat-label">Ventas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ todayStats.orders }}</span>
+            <span class="stat-label">Órdenes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE SELECCIÓN DE USUARIO (SOLO TESTING) -->
+  <ion-modal [isOpen]="isUserSelectorOpen" (willDismiss)="closeUserSelector()">
+    <ng-template>
+      <div class="user-selector-modal">
+        
+        <div class="modal-header">
+          <h2 class="modal-title">Selecciona un Usuario</h2>
+          <ion-button fill="clear" class="btn-close-modal" (click)="closeUserSelector()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-subtitle">Elige un perfil para probar las funcionalidades</p>
+          
+          <div class="users-grid">
+            <div 
+              class="user-card" 
+              *ngFor="let user of availableUsers"
+              [class.selected]="user.id === currentUser.id"
+              (click)="selectUser(user)">
+              
+              <div class="user-card-avatar">
+                <img [src]="user.avatar" [alt]="user.name" class="user-avatar">
+                <ion-icon 
+                  *ngIf="user.id === currentUser.id" 
+                  name="checkmark-circle" 
+                  class="selected-icon">
+                </ion-icon>
+              </div>
+              
+              <h3 class="user-card-name">{{ user.name }}</h3>
+              <p class="user-card-role">{{ user.role }}</p>
+              <span class="user-card-badge" [ngClass]="user.roleType">
+                {{ getRoleBadgeText(user.roleType) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+  
+  <app-footer-dashboard></app-footer-dashboard>
+</ion-content>

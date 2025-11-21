@@ -1,0 +1,60 @@
+### Test 1: Login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "ejemplo@gmail.com",
+  "contrasena": "123456"
+}
+
+### Test 2: Registro
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "nombre_usuario": "Usuario Test",
+  "email": "test@gmail.com",
+  "contrasena": "123456",
+  "id_rol": 1
+}
+
+### Test 3: Email de prueba
+POST http://localhost:3000/auth/test-email
+Content-Type: application/json
+
+{
+  "email": "tu_email@gmail.com",
+  "name": "Test Usuario"
+}
+```
+
+---
+
+## **🔧 CÓMO USARLO:**
+
+### **1. Instalar extensión REST Client:**
+- En VS Code: `Ctrl + Shift + X`
+- Busca: **"REST Client"**
+- Instala
+
+### **2. Usar el archivo:**
+- Abre `backend/test-api.http`
+- Verás un botón **"Send Request"** arriba de cada `POST`
+- Click en "Send Request"
+- Los resultados aparecen en un panel a la derecha
+
+---
+
+## **✅ RESUMEN:**
+
+**Archivos que debes tener:**
+```
+backend/
+├── routes/
+│   └── auth.js              ← Archivo 1 (cópialo completo)
+├── test-api.http            ← Archivo 2 (créalo nuevo)
+├── services/
+│   └── emailService.js      ← Ya lo tienes
+├── database/
+│   └── conexion.js          ← Ya lo tienes
+└── .env                     ← Ya lo tien

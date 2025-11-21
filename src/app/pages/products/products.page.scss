@@ -1,0 +1,470 @@
+ion-content {
+  --background: #f0f0f0;
+}
+
+.products-container {
+  min-height: calc(100vh - 200px);
+  padding: 32px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ========== HEADER ==========
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  color: #ff6b35;
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+}
+
+.btn-back {
+  --color: #495057;
+  font-weight: 600;
+  text-transform: none;
+  font-size: 15px;
+  
+  &:hover {
+    --color: #ff6b35;
+  }
+}
+
+.btn-add {
+  --background: #ff6b35;
+  --background-hover: #ff5722;
+  --background-activated: #e64a19;
+  --color: white;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  font-weight: 600;
+  text-transform: none;
+  height: 48px;
+  padding: 0 24px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    --box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+// ========== ORDENAMIENTO ==========
+.sort-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.sort-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 15px;
+}
+
+.sort-select {
+  padding: 10px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+  
+  &:hover {
+    border-color: #ff6b35;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  }
+}
+
+.btn-sort {
+  --color: #495057;
+  --background: #f8f9fa;
+  --border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  
+  &:hover {
+    --background: #e9ecef;
+    --color: #ff6b35;
+  }
+  
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+// ========== TABLA ==========
+.products-table {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  thead {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    
+    tr th {
+      padding: 18px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: white;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      position: relative;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      
+      &::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 60%;
+        background: rgba(255, 255, 255, 0.2);
+      }
+      
+      &:last-child::after {
+        display: none;
+      }
+    }
+  }
+  
+  tbody {
+    tr {
+      border-bottom: 1px solid #e9ecef;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: linear-gradient(90deg, #fff3e6 0%, #ffffff 100%);
+        transform: scale(1.005);
+      }
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      td {
+        padding: 18px 20px;
+        color: #495057;
+        font-size: 14px;
+        
+        &.product-name {
+          font-weight: 600;
+          color: #212529;
+        }
+        
+        &.price-cell {
+          font-weight: 700;
+          color: #28a745;
+          font-size: 16px;
+        }
+        
+        &.actions {
+          display: flex;
+          gap: 8px;
+          
+          ion-button {
+            transition: all 0.2s ease;
+            
+            &:hover {
+              transform: scale(1.15);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.no-products {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 60px 20px !important;
+  font-size: 15px;
+  background: #f8f9fa;
+}
+
+// ========== MENSAJE INFORMATIVO ==========
+.info-message {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #2196f3;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-top: 24px;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+  animation: slideIn 0.5s ease;
+  
+  ion-icon {
+    font-size: 32px;
+    color: #1976d2;
+    flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  p {
+    margin: 0;
+    color: #0d47a1;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+// ========== MODAL ==========
+.modal-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.modal-header {
+  padding: 24px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+  color: white;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+  text-align: center;
+}
+
+.btn-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  --color: white;
+  --background: rgba(255, 255, 255, 0.2);
+  --border-radius: 8px;
+  
+  &:hover {
+    --background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.modal-body {
+  flex: 1;
+  padding: 32px 24px;
+  overflow-y: auto;
+  background: #f8f9fa;
+}
+
+// ========== FORMULARIO ==========
+.form-row {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  color: #333;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  }
+  
+  &::placeholder {
+    color: #adb5bd;
+  }
+}
+
+.price-display {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #856404;
+  text-align: center;
+}
+
+.price-info {
+  display: block;
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+// ========== ACCIONES DEL MODAL ==========
+.modal-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-save {
+  --background: #28a745;
+  --background-hover: #218838;
+  --background-activated: #1e7e34;
+  --color: white;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  font-weight: 600;
+  text-transform: none;
+  height: 48px;
+  
+  &:hover {
+    --box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  &:disabled {
+    --background: #adb5bd;
+    --box-shadow: none;
+  }
+}
+
+.btn-cancel {
+  --border-color: #6c757d;
+  --color: #6c757d;
+  --border-radius: 12px;
+  font-weight: 600;
+  text-transform: none;
+  height: 48px;
+  
+  &:hover {
+    --background: #f8f9fa;
+    --border-color: #495057;
+    --color: #495057;
+  }
+}
+
+// ========== RESPONSIVE ==========
+@media (max-width: 768px) {
+  .products-container {
+    padding: 20px 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .page-title {
+    font-size: 32px;
+    text-align: center;
+  }
+  
+  .btn-add {
+    width: 100%;
+  }
+  
+  .sort-section {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .sort-label {
+      text-align: center;
+    }
+    
+    .sort-select {
+      width: 100%;
+    }
+  }
+  
+  .products-table {
+    overflow-x: auto;
+  }
+  
+  table {
+    min-width: 600px;
+  }
+  
+  .info-message {
+    flex-direction: column;
+    text-align: center;
+    
+    ion-icon {
+      font-size: 48px;
+    }
+  }
+  
+  .modal-body {
+    padding: 24px 16px;
+  }
+}
